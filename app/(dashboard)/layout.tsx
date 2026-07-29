@@ -1,16 +1,18 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Leaf, LayoutDashboard, Users, Package2, CreditCard, BarChart2, ShoppingBasket, LogOut, BookOpen } from 'lucide-react'
+import { Leaf, LayoutDashboard, Users, Package2, CreditCard, BarChart2, ShoppingBasket, LogOut, BookOpen, Settings, MapPin } from 'lucide-react'
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Tableau de bord' },
   { href: '/membres', icon: Users, label: 'Membres' },
+  { href: '/parcelles', icon: MapPin, label: 'Parcelles' },
   { href: '/collectes', icon: ShoppingBasket, label: 'Collectes' },
   { href: '/stocks', icon: Package2, label: 'Stocks' },
   { href: '/paiements', icon: CreditCard, label: 'Paiements' },
   { href: '/rapports', icon: BarChart2, label: 'Rapports' },
   { href: '/onboarding', icon: BookOpen, label: 'Guide démo' },
+  { href: '/parametres', icon: Settings, label: 'Paramètres' },
 ]
 
 async function logoutAction() {
