@@ -2,6 +2,7 @@
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Leaf, Users, Package, BarChart2, Wifi, Shield } from 'lucide-react'
+import { hoverScale } from '@/lib/animations'
 
 const features = [
   { icon: Users, title: 'Gestion membres', desc: "Suivez vos coopérateurs, leurs parcelles et leur production" },
@@ -68,7 +69,8 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ type: 'spring' as const, stiffness: 80, delay: i * 0.08 }}
-              className="p-5 rounded-xl text-left"
+              {...hoverScale}
+              className="p-5 rounded-xl text-left cursor-default"
               style={{ background: '#112240', border: '1px solid rgba(255,255,255,0.08)' }}>
               <f.icon className="w-6 h-6 mb-3" style={{ color: '#00BCD4' }} />
               <h3 className="text-white font-semibold mb-1">{f.title}</h3>
