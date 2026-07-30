@@ -7,6 +7,7 @@ import {
   KPI_DATA, INCIDENTS_MOCK, MOIS_OPTIONS, GRAVITE_STYLES, TYPE_COLORS, fmtFCFA,
 } from './rapports.data'
 import { RapportsProduction } from './RapportsProduction'
+import PDFExportButton from '@/components/PDFExportButton'
 
 export default function RapportsPage() {
   const [mounted, setMounted] = useState(false)
@@ -38,10 +39,11 @@ export default function RapportsPage() {
             className="px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-cyan-400/50">
             {['2024', '2025', '2026'].map(y => <option key={y}>{y}</option>)}
           </select>
+          <PDFExportButton moisLabel={moisLabel} annee={annee} kpi={kpi} />
           <button onClick={() => window.print()}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all hover:opacity-90"
             style={{ background: '#0A1628', color: 'white' }}>
-            <Printer className="w-4 h-4" /> Exporter PDF
+            <Printer className="w-4 h-4" /> Imprimer
           </button>
         </div>
       </div>

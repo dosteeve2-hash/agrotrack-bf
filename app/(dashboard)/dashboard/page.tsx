@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Users, ShoppingBasket, Package2, CreditCard, TrendingUp, AlertTriangle } from 'lucide-react'
+import WeatherWidget from '@/components/WeatherWidget'
+import YieldChart from '@/components/YieldChart'
 
 const fmt = (n: number) => new Intl.NumberFormat('fr-FR').format(n) + ' FCFA'
 
@@ -57,6 +59,14 @@ export default async function DashboardPage() {
             </p>
           </div>
         ))}
+      </div>
+
+      {/* Météo + Rendement */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+        <WeatherWidget />
+        <div className="lg:col-span-2">
+          <YieldChart />
+        </div>
       </div>
 
       {/* Quick links */}
