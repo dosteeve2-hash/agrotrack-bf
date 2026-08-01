@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Leaf, LayoutDashboard, Users, Package2, CreditCard, BarChart2, ShoppingBasket, LogOut, BookOpen, Settings, MapPin } from 'lucide-react'
+import { Leaf, LayoutDashboard, Users, Package2, CreditCard, BarChart2, ShoppingBasket, LogOut, BookOpen, Settings, MapPin, Calendar, TrendingUp } from 'lucide-react'
 import NavAlertBadge from '@/components/NavAlertBadge'
 
 const navItems = [
@@ -11,8 +11,10 @@ const navItems = [
   { href: '/collectes', icon: ShoppingBasket, label: 'Collectes' },
   { href: '/stocks', icon: Package2, label: 'Stocks' },
   { href: '/paiements', icon: CreditCard, label: 'Paiements' },
+  { href: '/calendrier', icon: Calendar, label: 'Calendrier' },
+  { href: '/finances', icon: TrendingUp, label: 'Finances' },
   { href: '/rapports', icon: BarChart2, label: 'Rapports' },
-  { href: '/onboarding', icon: BookOpen, label: 'Guide démo' },
+  { href: '/onboarding', icon: BookOpen, label: "Guide d'Acmo" },
   { href: '/parametres', icon: Settings, label: 'Paramètres' },
 ]
 
@@ -30,7 +32,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: '#f1f5f9' }}>
-      {/* Sidebar */}
       <aside className="w-60 flex-shrink-0 flex flex-col" style={{ background: '#0A1628' }}>
         <div className="flex items-center gap-2 px-5 py-5 border-b border-white/10">
           <Leaf className="w-6 h-6 flex-shrink-0" style={{ color: '#D4AF37' }} />
@@ -57,7 +58,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
           </form>
         </div>
       </aside>
-      {/* Main */}
       <main className="flex-1 overflow-y-auto">{children}</main>
     </div>
   )
