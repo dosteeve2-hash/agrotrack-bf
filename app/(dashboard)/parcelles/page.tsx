@@ -2,13 +2,110 @@
 
 // app/(dashboard)/parcelles/page.tsx
 import { useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, MapPin as MapPinIcon } from 'lucide-react'
 import {
   PARCELLES_INIT, VILLAGES, CULTURES, STATUTS, DEFAULT_FORM,
+  CULTURE_COLORS, STATUT_STYLES,
   type Parcelle, type Culture, type Statut, type FormState,
 } from './parcelles.data'
 import { ParcelleTable } from './ParcelleTable'
 import { ParcelleModal } from './ParcelleModal'
+
+/* ─── Carte visuelle parcelles ──────────────────────────── */
+function CarteParcelles({ parcelles }: { parcelles: Parcelle[] }) {
+  const [hovered, setHovered] = useState<string | null>(null)
+
+  return (
+    <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 mb-6">
+      <div className="flex items-center gap-2 mb-4">
+        <MapPinIcon className="w-4 h-4" style={{ color: '#D4AF37' }} />
+        <h2 className="font-semibold text-gray-900 text-sm">Carte des parcelles</h2>
+        <span className="text-xs text-gray-400 ml-auto">{parcelles.length} parcelles</span>
+      </div>
+
+      {/* Légende */}
+      <div className="flex flex-wrap gap-3 mb-4">
+        {(Object.entries(CULTURE_COLORS) as [Culture, string][]).map(([culture, color]) => (
+          <div key={culture} className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded-sm flex-shrink-0" style={{ background: color }} />
+            <span className="text-xs text-gray-500">{culture}</span>
+          </div>
+        ))}
+        <div className="flex items-center gap-1.5 ml-auto">
+          <div className="w-3 h-3 rounded-sm border-2 border-dashed border-gray-300 flex-shrink-0" />
+          <span className="text-xs text-gray-400">Vide</span>
+        </div>
+      </div>
+
+      {/* Grille 4 × 5 = 20 cellules */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>
+        {Array.from({ length: 20 }).map((_, i) => {
+          const parcelle = parcelles[i]
+          const isHov = hovered === parcelle?.id
+          return (
+            <div
+              key={i}
+              onMouseEnter={() => parcelle && setHovered(parcelle.id)}
+              onMouseLeave={() => setHovered(null)}
+              style={{
+                aspectRatio: '1',
+                borderRadius: 8,
+                position: 'relative',
+                cursor: parcelle ? 'pointer' : 'default',
+                transition: 'transform 0.15s, box-shadow 0.15s',
+                transform: isHov ? 'scale(1.06)' : 'scale(1)',
+                boxShadow: isHov ? '0 4px 12px rgba(0,0,0,0.15)' : 'none',
+                background: parcelle
+                  ? `${CULTURE_COLORS[parcelle.culture]}${parcelle.statut === 'Jachère' ? '55' : 'cc'}`
+                  : '#f1f5f9',
+                border: parcelle ? `2px solid ${CULTURE_COLORS[parcelle.culture]}` : '2px dashed #e2e8f0',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 4,
+                overflow: 'hidden',
+              }}
+              title={parcelle ? `${parcelle.numero} — ${parcelle.culture} (${parcelle.surface} ha) — ${parcelle.statut}` : ''}
+            >
+              {parcelle ? (
+                <>
+                  <span style={{ fontSize: 9, fontWeight: 800, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.5)', lineHeight: 1, textAlign: 'center' }}>
+                    {parcelle.numero.replace('PRC-', 'P')}
+                  </span>
+                  <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.85)', marginTop: 2, textAlign: 'center', lineHeight: 1 }}>
+                    {parcelle.surface}ha
+                  </span>
+                  {parcelle.statut === 'Jachère' && (
+                    <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.7)', marginTop: 1 }}>jachère</span>
+                  )}
+                  {/* Tooltip au survol */}
+                  {isHov && (
+                    <div style={{
+                      position: 'absolute', bottom: '110%', left: '50%', transform: 'translateX(-50%)',
+                      background: '#0A1628', color: '#fff', borderRadius: 8, padding: '6px 10px',
+                      fontSize: 11, whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                    }}>
+                      <p style={{ fontWeight: 700, marginBottom: 2 }}>{parcelle.numero}</p>
+                      <p style={{ opacity: 0.8 }}>{parcelle.membre.split(' ')[0]}</p>
+                      <p style={{ opacity: 0.7 }}>{parcelle.culture} · {parcelle.surface} ha</p>
+                      <p style={{ fontSize: 10, marginTop: 3, padding: '2px 6px', borderRadius: 4, display: 'inline-block', background: STATUT_STYLES[parcelle.statut].bg, color: STATUT_STYLES[parcelle.statut].color }}>
+                        {parcelle.statut}
+                      </p>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <span style={{ fontSize: 16, color: '#e2e8f0' }}>+</span>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
 
 export default function ParcellesPage() {
   const [parcelles, setParcelles] = useState<Parcelle[]>(PARCELLES_INIT)
@@ -83,6 +180,9 @@ export default function ParcellesPage() {
           </div>
         ))}
       </div>
+
+      {/* Carte visuelle */}
+      <CarteParcelles parcelles={parcelles} />
 
       {/* Filtres */}
       <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 mb-4 flex flex-wrap gap-3">
