@@ -1,6 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Users, ShoppingBasket, Package2, CreditCard, TrendingUp, AlertTriangle } from 'lucide-react'
+import WeatherWidget from '@/components/WeatherWidget'
+import YieldChart from '@/components/YieldChart'
+import AlertesAgro from '@/components/AlertesAgro'
+import ExportCSVButton from '@/components/ExportCSVButton'
 
 const fmt = (n: number) => new Intl.NumberFormat('fr-FR').format(n) + ' FCFA'
 
@@ -23,10 +27,8 @@ export default async function DashboardPage() {
         <div className="flex items-center gap-3 px-4 py-3 rounded-xl mb-6 text-sm font-medium"
           style={{ background: '#00BCD420', border: '1px solid #00BCD440', color: '#00BCD4' }}>
           <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-          <span>Mode Démo actif — données fictives, rien n'est sauvegardé</span>
-          <Link href="/onboarding" className="ml-auto text-xs underline hover:no-underline">
-            Voir le guide →
-          </Link>
+          <span>Mode Démo actif — données fictives, rien n&apos;est sauvegardé</span>
+          <Link href="/onboarding" className="ml-auto text-xs underline hover:no-underline">Voir le guide →</Link>
         </div>
       )}
 
@@ -35,10 +37,12 @@ export default async function DashboardPage() {
           <h1 className="text-2xl font-bold text-gray-900">Tableau de bord</h1>
           <p className="text-gray-500 text-sm mt-0.5">Coopérative agricole — Koudougou, Burkina Faso</p>
         </div>
-        <span className="text-xs px-2 py-1 rounded-full font-medium"
-          style={{ background: '#D4AF3720', color: '#92760A' }}>
-          Lundi 13 juil. 2026
-        </span>
+        <div className="flex items-center gap-3">
+          <ExportCSVButton />
+          <span className="text-xs px-2 py-1 rounded-full font-medium" style={{ background: '#D4AF3720', color: '#92760A' }}>
+            Août 2026
+          </span>
+        </div>
       </div>
 
       {/* Stats */}
@@ -57,6 +61,17 @@ export default async function DashboardPage() {
             </p>
           </div>
         ))}
+      </div>
+
+      {/* Alertes agronomiques */}
+      <AlertesAgro />
+
+      {/* Météo + Rendement */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+        <WeatherWidget />
+        <div className="lg:col-span-2">
+          <YieldChart />
+        </div>
       </div>
 
       {/* Quick links */}
