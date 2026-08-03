@@ -8,6 +8,7 @@ const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Tableau de bord' },
   { href: '/membres', icon: Users, label: 'Membres' },
   { href: '/parcelles', icon: MapPin, label: 'Parcelles' },
+  { href: '/cultures', icon: Leaf, label: 'Cultures' },
   { href: '/collectes', icon: ShoppingBasket, label: 'Collectes' },
   { href: '/stocks', icon: Package2, label: 'Stocks' },
   { href: '/paiements', icon: CreditCard, label: 'Paiements' },
