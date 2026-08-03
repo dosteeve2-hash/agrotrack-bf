@@ -1,219 +1,338 @@
 'use client'
 
-// app/(dashboard)/parcelles/page.tsx
 import { useState } from 'react'
-import { Plus, MapPin as MapPinIcon } from 'lucide-react'
+import { Map, Sprout, TrendingUp, Droplets, Plus, Search } from 'lucide-react'
 import {
-  PARCELLES_INIT, VILLAGES, CULTURES, STATUTS, DEFAULT_FORM,
-  CULTURE_COLORS, STATUT_STYLES,
-  type Parcelle, type Culture, type Statut, type FormState,
-} from './parcelles.data'
-import { ParcelleTable } from './ParcelleTable'
-import { ParcelleModal } from './ParcelleModal'
+  BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+} from 'recharts'
 
-/* ─── Carte visuelle parcelles ──────────────────────────── */
-function CarteParcelles({ parcelles }: { parcelles: Parcelle[] }) {
-  const [hovered, setHovered] = useState<string | null>(null)
+interface Parcelle {
+  id: string; nom: string; superficie: number; village: string; typeSol: string
+  culturePrincipale: string; datePlantation: string; dateRecolteEstimee: string
+  statut: 'Active' | 'En repos' | 'En préparation' | 'Récoltée'
+  rendementEstime: number; irrigation: boolean; notes: string
+}
 
+const STATUTS = ['Active', 'En repos', 'En préparation', 'Récoltée'] as const
+type Statut = typeof STATUTS[number]
+
+function sStyle(s: string) {
+  const m: Record<string, { bg: string; color: string }> = {
+    'Active':          { bg:'#10b981', color:'white' },
+    'En repos':        { bg:'#4A90D9', color:'white' },
+    'En préparation':  { bg:'#f97316', color:'white' },
+    'Récoltée':        { bg:'#D4AF37', color:'#0A1628' },
+  }
+  return m[s] ?? { bg:'#D4AF37', color:'white' }
+}
+
+const PIE_COLORS: Record<string, string> = {
+  'Active':'#10b981','En repos':'#4A90D9','En préparation':'#f97316','Récoltée':'#D4AF37',
+}
+
+const MOCK: Parcelle[] = [
+  { id:'P01', nom:'Parcelle Koubri A', superficie:2.5, village:'Koubri', typeSol:'Latéritique',
+    culturePrincipale:'Maïs', datePlantation:'2026-05-15', dateRecolteEstimee:'2026-09-10',
+    statut:'Active', rendementEstime:1800, irrigation:true, notes:'Sol bien drainé, bonne humidité résiduelle.' },
+  { id:'P02', nom:'Parcelle Saponé B', superficie:1.8, village:'Saponé', typeSol:'Latéritique',
+    culturePrincipale:'Sorgho', datePlantation:'2026-06-01', dateRecolteEstimee:'2026-10-15',
+    statut:'Active', rendementEstime:1200, irrigation:false, notes:'Culture pluviale, bon peuplement.' },
+  { id:'P03', nom:'Parcelle Kombissiri C', superficie:3.2, village:'Kombissiri', typeSol:'Argilo-sableux',
+    culturePrincipale:'Coton', datePlantation:'2026-05-20', dateRecolteEstimee:'2026-11-01',
+    statut:'Active', rendementEstime:900, irrigation:false, notes:'Traitement phytosanitaire semaine 28.' },
+  { id:'P04', nom:'Parcelle Manga D', superficie:1.5, village:'Manga', typeSol:'Latéritique',
+    culturePrincipale:'Mil', datePlantation:'2026-06-10', dateRecolteEstimee:'2026-10-20',
+    statut:'En préparation', rendementEstime:800, irrigation:false, notes:'Labour motorisé en cours.' },
+  { id:'P05', nom:'Parcelle Pô E', superficie:2.0, village:'Pô', typeSol:'Sablonneux',
+    culturePrincipale:'Sésame', datePlantation:'2026-05-25', dateRecolteEstimee:'2026-09-05',
+    statut:'Active', rendementEstime:700, irrigation:false, notes:'Zone semi-aride, pluviométrie suivie.' },
+  { id:'P06', nom:'Parcelle Tenkodogo F', superficie:4.0, village:'Tenkodogo', typeSol:'Latéritique',
+    culturePrincipale:'Niébé', datePlantation:'2026-06-15', dateRecolteEstimee:'2026-09-30',
+    statut:'Active', rendementEstime:600, irrigation:true, notes:'Irrigation goutte-à-goutte fonctionnelle.' },
+  { id:'P07', nom:'Parcelle Léo G', superficie:2.8, village:'Léo', typeSol:'Latéritique',
+    culturePrincipale:'Arachide', datePlantation:'2026-06-05', dateRecolteEstimee:'2026-09-25',
+    statut:'Active', rendementEstime:1100, irrigation:false, notes:'Variété améliorée INERA, bon suivi.' },
+  { id:'P08', nom:'Parcelle Koubri H', superficie:1.2, village:'Koubri', typeSol:'Latéritique',
+    culturePrincipale:'Sorgho', datePlantation:'2025-10-01', dateRecolteEstimee:'2026-02-15',
+    statut:'Récoltée', rendementEstime:1300, irrigation:false, notes:'Saison sèche productive, stock constitué.' },
+  { id:'P09', nom:'Parcelle Saponé I', superficie:3.5, village:'Saponé', typeSol:'Argilo-sableux',
+    culturePrincipale:'Maïs', datePlantation:'2026-06-20', dateRecolteEstimee:'2026-10-10',
+    statut:'En repos', rendementEstime:1600, irrigation:true, notes:'Jachère courte, préparation prochaine saison.' },
+  { id:'P10', nom:'Parcelle Manga J', superficie:2.2, village:'Manga', typeSol:'Sablonneux',
+    culturePrincipale:'Mil', datePlantation:'2026-07-01', dateRecolteEstimee:'2026-11-15',
+    statut:'En préparation', rendementEstime:750, irrigation:false, notes:'Épandage fumure organique planifié.' },
+]
+
+function buildBarData(ps: Parcelle[]) {
+  const m: Record<string, { total:number; n:number }> = {}
+  for (const p of ps) {
+    if (!m[p.culturePrincipale]) m[p.culturePrincipale] = { total:0, n:0 }
+    m[p.culturePrincipale].total += p.rendementEstime
+    m[p.culturePrincipale].n += 1
+  }
+  return Object.entries(m).map(([culture, v]) => ({ culture, rendement:Math.round(v.total/v.n) }))
+}
+
+function buildPieData(ps: Parcelle[]) {
+  const m: Record<string, number> = {}
+  for (const p of ps) m[p.statut] = (m[p.statut] || 0) + 1
+  return Object.entries(m).map(([name, value]) => ({ name, value }))
+}
+
+function DetailModal({ p, onClose }: { p:Parcelle; onClose:()=>void }) {
   return (
-    <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 mb-6">
-      <div className="flex items-center gap-2 mb-4">
-        <MapPinIcon className="w-4 h-4" style={{ color: '#D4AF37' }} />
-        <h2 className="font-semibold text-gray-900 text-sm">Carte des parcelles</h2>
-        <span className="text-xs text-gray-400 ml-auto">{parcelles.length} parcelles</span>
-      </div>
-
-      {/* Légende */}
-      <div className="flex flex-wrap gap-3 mb-4">
-        {(Object.entries(CULTURE_COLORS) as [Culture, string][]).map(([culture, color]) => (
-          <div key={culture} className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-sm flex-shrink-0" style={{ background: color }} />
-            <span className="text-xs text-gray-500">{culture}</span>
+    <div style={{ position:'fixed',inset:0,background:'rgba(0,0,0,0.75)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:50,padding:16 }}
+      onClick={onClose}>
+      <div style={{ background:'#0A1628',borderRadius:16,padding:28,width:'100%',maxWidth:500,border:'1px solid rgba(255,255,255,0.12)' }}
+        onClick={e=>e.stopPropagation()}>
+        <div style={{ display:'flex',justifyContent:'space-between',alignItems:'start',marginBottom:20 }}>
+          <div>
+            <h2 style={{ color:'white',fontSize:18,fontWeight:700,marginBottom:6 }}>{p.nom}</h2>
+            <span style={{ fontSize:11,fontWeight:600,padding:'2px 10px',borderRadius:20,background:sStyle(p.statut).bg,color:sStyle(p.statut).color }}>
+              {p.statut}
+            </span>
           </div>
-        ))}
-        <div className="flex items-center gap-1.5 ml-auto">
-          <div className="w-3 h-3 rounded-sm border-2 border-dashed border-gray-300 flex-shrink-0" />
-          <span className="text-xs text-gray-400">Vide</span>
+          <button onClick={onClose} style={{ color:'rgba(255,255,255,0.5)',background:'none',border:'none',cursor:'pointer',fontSize:22,lineHeight:1 }}>✕</button>
         </div>
-      </div>
-
-      {/* Grille 4 × 5 = 20 cellules */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>
-        {Array.from({ length: 20 }).map((_, i) => {
-          const parcelle = parcelles[i]
-          const isHov = hovered === parcelle?.id
-          return (
-            <div
-              key={i}
-              onMouseEnter={() => parcelle && setHovered(parcelle.id)}
-              onMouseLeave={() => setHovered(null)}
-              style={{
-                aspectRatio: '1',
-                borderRadius: 8,
-                position: 'relative',
-                cursor: parcelle ? 'pointer' : 'default',
-                transition: 'transform 0.15s, box-shadow 0.15s',
-                transform: isHov ? 'scale(1.06)' : 'scale(1)',
-                boxShadow: isHov ? '0 4px 12px rgba(0,0,0,0.15)' : 'none',
-                background: parcelle
-                  ? `${CULTURE_COLORS[parcelle.culture]}${parcelle.statut === 'Jachère' ? '55' : 'cc'}`
-                  : '#f1f5f9',
-                border: parcelle ? `2px solid ${CULTURE_COLORS[parcelle.culture]}` : '2px dashed #e2e8f0',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: 4,
-                overflow: 'hidden',
-              }}
-              title={parcelle ? `${parcelle.numero} — ${parcelle.culture} (${parcelle.surface} ha) — ${parcelle.statut}` : ''}
-            >
-              {parcelle ? (
-                <>
-                  <span style={{ fontSize: 9, fontWeight: 800, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.5)', lineHeight: 1, textAlign: 'center' }}>
-                    {parcelle.numero.replace('PRC-', 'P')}
-                  </span>
-                  <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.85)', marginTop: 2, textAlign: 'center', lineHeight: 1 }}>
-                    {parcelle.surface}ha
-                  </span>
-                  {parcelle.statut === 'Jachère' && (
-                    <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.7)', marginTop: 1 }}>jachère</span>
-                  )}
-                  {/* Tooltip au survol */}
-                  {isHov && (
-                    <div style={{
-                      position: 'absolute', bottom: '110%', left: '50%', transform: 'translateX(-50%)',
-                      background: '#0A1628', color: '#fff', borderRadius: 8, padding: '6px 10px',
-                      fontSize: 11, whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                    }}>
-                      <p style={{ fontWeight: 700, marginBottom: 2 }}>{parcelle.numero}</p>
-                      <p style={{ opacity: 0.8 }}>{parcelle.membre.split(' ')[0]}</p>
-                      <p style={{ opacity: 0.7 }}>{parcelle.culture} · {parcelle.surface} ha</p>
-                      <p style={{ fontSize: 10, marginTop: 3, padding: '2px 6px', borderRadius: 4, display: 'inline-block', background: STATUT_STYLES[parcelle.statut].bg, color: STATUT_STYLES[parcelle.statut].color }}>
-                        {parcelle.statut}
-                      </p>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <span style={{ fontSize: 16, color: '#e2e8f0' }}>+</span>
-              )}
+        <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:16 }}>
+          {([
+            ['Village',p.village],['Superficie',`${p.superficie} ha`],
+            ['Culture',p.culturePrincipale],['Type de sol',p.typeSol],
+            ['Plantation',p.datePlantation],['Récolte estimée',p.dateRecolteEstimee],
+            ['Rendement estimé',`${p.rendementEstime} kg/ha`],['Irrigation',p.irrigation?'✓ Oui':'✗ Non'],
+          ] as [string,string][]).map(([k,v])=>(
+            <div key={k} style={{ background:'rgba(255,255,255,0.04)',borderRadius:8,padding:'10px 12px' }}>
+              <p style={{ fontSize:10,color:'rgba(255,255,255,0.4)',marginBottom:3 }}>{k}</p>
+              <p style={{ fontSize:13,color:'white',fontWeight:600 }}>{v}</p>
             </div>
-          )
-        })}
+          ))}
+        </div>
+        {p.notes && (
+          <div style={{ background:'rgba(212,175,55,0.08)',border:'1px solid rgba(212,175,55,0.2)',borderRadius:8,padding:12 }}>
+            <p style={{ fontSize:11,color:'#D4AF37',marginBottom:4 }}>Notes</p>
+            <p style={{ fontSize:13,color:'rgba(255,255,255,0.8)' }}>{p.notes}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function NewModal({ onClose, onAdd }: { onClose:()=>void; onAdd:(p:Parcelle)=>void }) {
+  const [f, setF] = useState({ nom:'',superficie:'',village:'Koubri',typeSol:'Latéritique',
+    culturePrincipale:'Maïs',datePlantation:'',dateRecolteEstimee:'',
+    statut:'Active' as Statut,rendementEstime:'',irrigation:false,notes:'' })
+  const upd = (k:string,v:unknown) => setF(prev=>({ ...prev,[k]:v }))
+  const inp: React.CSSProperties = { background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.12)',
+    borderRadius:8,color:'white',padding:'8px 12px',fontSize:13,width:'100%',outline:'none',boxSizing:'border-box' }
+  const lbl: React.CSSProperties = { fontSize:11,color:'rgba(255,255,255,0.5)',marginBottom:4,display:'block' }
+  function submit() {
+    if (!f.nom || !f.superficie) return
+    onAdd({ id:`P${Date.now()}`,nom:f.nom,superficie:parseFloat(f.superficie),village:f.village,
+      typeSol:f.typeSol,culturePrincipale:f.culturePrincipale,datePlantation:f.datePlantation,
+      dateRecolteEstimee:f.dateRecolteEstimee,statut:f.statut,
+      rendementEstime:parseFloat(f.rendementEstime)||0,irrigation:f.irrigation,notes:f.notes })
+  }
+  return (
+    <div style={{ position:'fixed',inset:0,background:'rgba(0,0,0,0.75)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:50,padding:16 }}
+      onClick={onClose}>
+      <div style={{ background:'#0A1628',borderRadius:16,padding:28,width:'100%',maxWidth:540,border:'1px solid rgba(255,255,255,0.12)',maxHeight:'90vh',overflowY:'auto' }}
+        onClick={e=>e.stopPropagation()}>
+        <div style={{ display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20 }}>
+          <h2 style={{ color:'white',fontSize:18,fontWeight:700 }}>Nouvelle parcelle</h2>
+          <button onClick={onClose} style={{ color:'rgba(255,255,255,0.5)',background:'none',border:'none',cursor:'pointer',fontSize:22 }}>✕</button>
+        </div>
+        <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:12 }}>
+          <div style={{ gridColumn:'1/-1' }}>
+            <label style={lbl}>Nom *</label>
+            <input value={f.nom} onChange={e=>upd('nom',e.target.value)} style={inp} placeholder="Parcelle Nord A" />
+          </div>
+          <div><label style={lbl}>Superficie (ha) *</label>
+            <input type="number" value={f.superficie} onChange={e=>upd('superficie',e.target.value)} style={inp} placeholder="2.5" /></div>
+          <div><label style={lbl}>Village</label>
+            <select value={f.village} onChange={e=>upd('village',e.target.value)} style={{ ...inp }}>
+              {['Koubri','Saponé','Kombissiri','Manga','Pô','Tenkodogo','Léo'].map(v=><option key={v}>{v}</option>)}
+            </select></div>
+          <div><label style={lbl}>Culture</label>
+            <select value={f.culturePrincipale} onChange={e=>upd('culturePrincipale',e.target.value)} style={{ ...inp }}>
+              {['Maïs','Sorgho','Mil','Coton','Sésame','Niébé','Arachide'].map(c=><option key={c}>{c}</option>)}
+            </select></div>
+          <div><label style={lbl}>Type de sol</label>
+            <select value={f.typeSol} onChange={e=>upd('typeSol',e.target.value)} style={{ ...inp }}>
+              {['Latéritique','Argilo-sableux','Sablonneux','Argileux'].map(t=><option key={t}>{t}</option>)}
+            </select></div>
+          <div><label style={lbl}>Statut</label>
+            <select value={f.statut} onChange={e=>upd('statut',e.target.value as Statut)} style={{ ...inp }}>
+              {STATUTS.map(s=><option key={s}>{s}</option>)}
+            </select></div>
+          <div><label style={lbl}>Rendement estimé (kg/ha)</label>
+            <input type="number" value={f.rendementEstime} onChange={e=>upd('rendementEstime',e.target.value)} style={inp} placeholder="1200" /></div>
+          <div><label style={lbl}>Date plantation</label>
+            <input type="date" value={f.datePlantation} onChange={e=>upd('datePlantation',e.target.value)} style={inp} /></div>
+          <div><label style={lbl}>Récolte estimée</label>
+            <input type="date" value={f.dateRecolteEstimee} onChange={e=>upd('dateRecolteEstimee',e.target.value)} style={inp} /></div>
+          <div style={{ display:'flex',alignItems:'center',gap:8,paddingTop:12 }}>
+            <input type="checkbox" id="irr" checked={f.irrigation} onChange={e=>upd('irrigation',e.target.checked)} />
+            <label htmlFor="irr" style={{ color:'rgba(255,255,255,0.7)',fontSize:13,cursor:'pointer' }}>Irrigation disponible</label>
+          </div>
+          <div style={{ gridColumn:'1/-1' }}><label style={lbl}>Notes</label>
+            <textarea value={f.notes} onChange={e=>upd('notes',e.target.value)}
+              style={{ ...inp,height:64,resize:'none' } as React.CSSProperties} placeholder="Observations..." />
+          </div>
+        </div>
+        <div style={{ display:'flex',gap:10,marginTop:20 }}>
+          <button onClick={onClose} style={{ flex:1,padding:'10px',borderRadius:8,border:'1px solid rgba(255,255,255,0.12)',background:'transparent',color:'rgba(255,255,255,0.6)',cursor:'pointer',fontSize:13 }}>Annuler</button>
+          <button onClick={submit} style={{ flex:1,padding:'10px',borderRadius:8,border:'none',background:'#D4AF37',color:'#0A1628',cursor:'pointer',fontSize:13,fontWeight:700 }}>Créer la parcelle</button>
+        </div>
       </div>
     </div>
   )
 }
 
 export default function ParcellesPage() {
-  const [parcelles, setParcelles] = useState<Parcelle[]>(PARCELLES_INIT)
-  const [recherche, setRecherche]       = useState('')
-  const [filterVillage, setFilterVillage] = useState<typeof VILLAGES[number]>('Tous')
-  const [filterCulture, setFilterCulture] = useState<Culture | 'Toutes'>('Toutes')
-  const [filterStatut,  setFilterStatut]  = useState<Statut | 'Tous'>('Tous')
-  const [showModal, setShowModal] = useState(false)
-  const [form, setForm]           = useState<FormState>(DEFAULT_FORM)
+  const [parcelles, setParcelles] = useState<Parcelle[]>(MOCK)
+  const [search, setSearch]       = useState('')
+  const [filterStatut, setFilterStatut] = useState<Statut|'Tous'>('Tous')
+  const [selected, setSelected]   = useState<Parcelle|null>(null)
+  const [showNew, setShowNew]     = useState(false)
 
-  const totalParcelles = parcelles.length
-  const surfaceTotale  = parcelles.reduce((acc, p) => acc + p.surface, 0)
-  const enCulture      = parcelles.filter(p => p.statut === 'En culture').length
-
+  const surfaceTotale = parcelles.reduce((s,p)=>s+p.superficie,0)
+  const actives       = parcelles.filter(p=>p.statut==='Active').length
+  const rendMoyen     = Math.round(parcelles.reduce((s,p)=>s+p.rendementEstime,0)/parcelles.length)
+  const prevues       = parcelles.filter(p=>p.statut==='Active'||p.statut==='En préparation').length
   const kpis = [
-    { label: 'Total parcelles',  value: totalParcelles.toString(),                                          color: '#00BCD4' },
-    { label: 'Surface totale',   value: surfaceTotale.toFixed(1) + ' ha',                                   color: '#D4AF37' },
-    { label: 'En culture',       value: enCulture.toString(),                                                color: '#10b981' },
-    { label: 'Rendement moyen',  value: new Intl.NumberFormat('fr-FR').format(820) + ' kg/ha',              color: '#8b5cf6' },
+    { label:'Surface totale',   value:`${surfaceTotale.toFixed(1)} ha`,                  icon:Map,       color:'#00D4FF' },
+    { label:'Parcelles actives',value:`${actives}`,                                       icon:Sprout,    color:'#10b981' },
+    { label:'Rendement moyen',  value:`${rendMoyen.toLocaleString('fr-FR')} kg/ha`,      icon:TrendingUp, color:'#D4AF37' },
+    { label:'Récoltes prévues', value:`${prevues}`,                                       icon:Droplets,  color:'#f97316' },
   ]
+  const barData = buildBarData(parcelles)
+  const pieData = buildPieData(parcelles)
 
-  const filtered = parcelles.filter(p => {
-    const q = recherche.toLowerCase()
-    return (
-      (p.membre.toLowerCase().includes(q) || p.numero.toLowerCase().includes(q)) &&
-      (filterVillage === 'Tous'    || p.village  === filterVillage) &&
-      (filterCulture === 'Toutes'  || p.culture  === filterCulture) &&
-      (filterStatut  === 'Tous'    || p.statut   === filterStatut)
-    )
+  const filtered = parcelles.filter(p=>{
+    const q=search.toLowerCase()
+    return (p.nom.toLowerCase().includes(q)||p.village.toLowerCase().includes(q)||p.culturePrincipale.toLowerCase().includes(q))
+      && (filterStatut==='Tous'||p.statut===filterStatut)
   })
 
-  function handleAjouter() {
-    if (!form.surface || !form.membre) return
-    const newParcelle: Parcelle = {
-      id:              `P${String(parcelles.length + 1).padStart(3, '0')}`,
-      numero:          `PRC-${String(parcelles.length + 1).padStart(3, '0')}`,
-      membre:          form.membre,
-      surface:         parseFloat(form.surface) || 0,
-      culture:         form.culture,
-      village:         form.region.split('(')[1]?.replace(')', '') ?? form.region,
-      statut:          'Disponible',
-      derniereRecolte: '—',
-      gps:             form.gps || '—',
-    }
-    setParcelles(prev => [...prev, newParcelle])
-    setForm(DEFAULT_FORM)
-    setShowModal(false)
-  }
+  const card: React.CSSProperties = { background:'#0c1a34',borderRadius:12,padding:18,border:'1px solid rgba(255,255,255,0.08)' }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div style={{ background:'#0A1628',minHeight:'100vh',padding:24,color:'white' }}>
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div style={{ display:'flex',justifyContent:'space-between',alignItems:'start',marginBottom:24 }}>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Parcelles</h1>
-          <p className="text-gray-500 text-sm mt-0.5">{enCulture} en culture sur {totalParcelles} parcelles enregistrées</p>
+          <h1 style={{ fontSize:22,fontWeight:800,color:'white',marginBottom:4 }}>Parcelles agricoles</h1>
+          <p style={{ fontSize:13,color:'rgba(255,255,255,0.5)' }}>{parcelles.length} parcelles · Saison 2026</p>
         </div>
-        <button onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all hover:opacity-90"
-          style={{ background: '#D4AF37', color: '#0A1628' }}>
-          <Plus className="w-4 h-4" /> Ajouter une parcelle
+        <button onClick={()=>setShowNew(true)}
+          style={{ display:'flex',alignItems:'center',gap:6,padding:'9px 16px',borderRadius:8,background:'#D4AF37',color:'#0A1628',border:'none',cursor:'pointer',fontSize:13,fontWeight:700 }}>
+          <Plus size={15}/> Nouvelle parcelle
         </button>
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {kpis.map(k => (
-          <div key={k.label} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <p className="text-xs text-gray-500 mb-1.5">{k.label}</p>
-            <p className="text-2xl font-bold" style={{ color: k.color }}>{k.value}</p>
+      <div style={{ display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:14,marginBottom:24 }}>
+        {kpis.map(k=>(
+          <div key={k.label} style={card}>
+            <k.icon size={18} style={{ color:k.color,marginBottom:10 }} />
+            <p style={{ fontSize:12,color:'rgba(255,255,255,0.5)',marginBottom:6 }}>{k.label}</p>
+            <p style={{ fontSize:22,fontWeight:800,color:'white' }}>{k.value}</p>
           </div>
         ))}
       </div>
 
-      {/* Carte visuelle */}
-      <CarteParcelles parcelles={parcelles} />
-
-      {/* Filtres */}
-      <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 mb-4 flex flex-wrap gap-3">
-        <div className="flex-1 min-w-[200px] relative">
-          <input type="text" placeholder="Rechercher par membre ou numéro…"
-            value={recherche} onChange={e => setRecherche(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50" />
+      {/* Charts */}
+      <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,marginBottom:24 }}>
+        <div style={card}>
+          <h2 style={{ fontSize:13,fontWeight:600,color:'rgba(255,255,255,0.8)',marginBottom:14 }}>Rendement estimé par culture (kg/ha)</h2>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={barData} margin={{ top:4,right:8,left:-10,bottom:0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+              <XAxis dataKey="culture" tick={{ fontSize:11,fill:'rgba(255,255,255,0.4)' }} />
+              <YAxis tick={{ fontSize:11,fill:'rgba(255,255,255,0.4)' }} />
+              <Tooltip contentStyle={{ background:'#0A1628',border:'1px solid rgba(255,255,255,0.1)',borderRadius:8,color:'white',fontSize:12 }} />
+              <Bar dataKey="rendement" fill="#D4AF37" radius={[4,4,0,0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
-        <select value={filterVillage} onChange={e => setFilterVillage(e.target.value as typeof VILLAGES[number])}
-          className="px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white">
-          {VILLAGES.map(v => <option key={v}>{v}</option>)}
-        </select>
-        <select value={filterCulture} onChange={e => setFilterCulture(e.target.value as Culture | 'Toutes')}
-          className="px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white">
-          {CULTURES.map(c => <option key={c}>{c}</option>)}
-        </select>
-        <select value={filterStatut} onChange={e => setFilterStatut(e.target.value as Statut | 'Tous')}
-          className="px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white">
-          {STATUTS.map(s => <option key={s}>{s}</option>)}
-        </select>
+        <div style={card}>
+          <h2 style={{ fontSize:13,fontWeight:600,color:'rgba(255,255,255,0.8)',marginBottom:14 }}>Répartition par statut</h2>
+          <ResponsiveContainer width="100%" height={200}>
+            <PieChart>
+              <Pie data={pieData} cx="50%" cy="50%" outerRadius={72} dataKey="value"
+                label={({ name, percent }) => `${name} ${Math.round((percent as number)*100)}%`}
+                labelLine={false} style={{ fontSize:10 }}>
+                {pieData.map(e=><Cell key={e.name} fill={PIE_COLORS[e.name]??'#ccc'} />)}
+              </Pie>
+              <Tooltip contentStyle={{ background:'#0A1628',border:'1px solid rgba(255,255,255,0.1)',borderRadius:8,color:'white',fontSize:12 }} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
-      <ParcelleTable parcelles={filtered} />
+      {/* Search + Filters */}
+      <div style={{ display:'flex',gap:10,marginBottom:18,flexWrap:'wrap' }}>
+        <div style={{ position:'relative',flex:1,minWidth:220 }}>
+          <Search size={14} style={{ position:'absolute',left:10,top:'50%',transform:'translateY(-50%)',color:'rgba(255,255,255,0.3)' }} />
+          <input value={search} onChange={e=>setSearch(e.target.value)}
+            placeholder="Rechercher parcelle, village, culture…"
+            style={{ background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.12)',borderRadius:8,
+              color:'white',padding:'8px 12px 8px 32px',fontSize:13,width:'100%',outline:'none',boxSizing:'border-box' }} />
+        </div>
+        {(['Tous',...STATUTS]).map(s=>{
+          const active = filterStatut===s
+          const st = sStyle(s)
+          return (
+            <button key={s} onClick={()=>setFilterStatut(s as Statut|'Tous')}
+              style={{ padding:'7px 14px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',border:'none',
+                background:active?(s==='Tous'?'#D4AF37':st.bg):'rgba(255,255,255,0.06)',
+                color:active?st.color:'rgba(255,255,255,0.5)' }}>
+              {s}
+            </button>
+          )
+        })}
+      </div>
 
-      <ParcelleModal
-        open={showModal}
-        form={form}
-        onClose={() => setShowModal(false)}
-        onChange={(patch) => setForm(prev => ({ ...prev, ...patch }))}
-        onSubmit={handleAjouter}
-      />
+      {/* Grid de cartes */}
+      <div style={{ display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:14 }}>
+        {filtered.map(p=>(
+          <div key={p.id} onClick={()=>setSelected(p)}
+            style={{ background:'#0c1a34',borderRadius:12,padding:16,border:'1px solid rgba(255,255,255,0.08)',
+              cursor:'pointer',transition:'border-color .2s' }}
+            onMouseEnter={e=>(e.currentTarget.style.borderColor='#D4AF37')}
+            onMouseLeave={e=>(e.currentTarget.style.borderColor='rgba(255,255,255,0.08)')}>
+            <div style={{ display:'flex',justifyContent:'space-between',alignItems:'start',marginBottom:8 }}>
+              <span style={{ fontSize:11,fontWeight:700,color:'rgba(255,255,255,0.35)' }}>{p.id}</span>
+              <span style={{ fontSize:10,fontWeight:600,padding:'2px 8px',borderRadius:12,background:sStyle(p.statut).bg,color:sStyle(p.statut).color }}>{p.statut}</span>
+            </div>
+            <p style={{ fontSize:13,fontWeight:700,color:'white',marginBottom:3,lineHeight:1.3 }}>{p.nom}</p>
+            <p style={{ fontSize:12,color:'rgba(255,255,255,0.45)',marginBottom:12 }}>{p.village}</p>
+            <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:6 }}>
+              <div style={{ background:'rgba(255,255,255,0.04)',borderRadius:6,padding:'6px 9px' }}>
+                <p style={{ fontSize:9,color:'rgba(255,255,255,0.38)',marginBottom:2 }}>Culture</p>
+                <p style={{ fontSize:12,fontWeight:600,color:'#00D4FF' }}>{p.culturePrincipale}</p>
+              </div>
+              <div style={{ background:'rgba(255,255,255,0.04)',borderRadius:6,padding:'6px 9px' }}>
+                <p style={{ fontSize:9,color:'rgba(255,255,255,0.38)',marginBottom:2 }}>Superficie</p>
+                <p style={{ fontSize:12,fontWeight:600,color:'#D4AF37' }}>{p.superficie} ha</p>
+              </div>
+              <div style={{ background:'rgba(255,255,255,0.04)',borderRadius:6,padding:'6px 9px',gridColumn:'1/-1' }}>
+                <p style={{ fontSize:9,color:'rgba(255,255,255,0.38)',marginBottom:2 }}>Rendement estimé</p>
+                <p style={{ fontSize:12,fontWeight:600,color:'white' }}>{p.rendementEstime.toLocaleString('fr-FR')} kg/ha</p>
+              </div>
+            </div>
+            {p.irrigation&&<div style={{ marginTop:8,display:'flex',alignItems:'center',gap:4 }}>
+              <Droplets size={12} color="#00D4FF"/><span style={{ fontSize:10,color:'#00D4FF' }}>Irrigation</span>
+            </div>}
+          </div>
+        ))}
+      </div>
+
+      {selected&&<DetailModal p={selected} onClose={()=>setSelected(null)}/>}
+      {showNew&&<NewModal onClose={()=>setShowNew(false)} onAdd={p=>{setParcelles(prev=>[...prev,p]);setShowNew(false)}}/>}
     </div>
   )
 }
