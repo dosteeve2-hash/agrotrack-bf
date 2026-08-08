@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Leaf, LayoutDashboard, Users, Package2, CreditCard, BarChart2, ShoppingBasket, LogOut, BookOpen, Settings, MapPin, Calendar, TrendingUp, Cloud } from 'lucide-react'
+import { Leaf, LayoutDashboard, Users, Package2, CreditCard, BarChart2, ShoppingBasket, LogOut, BookOpen, Settings, MapPin, Calendar, TrendingUp, Cloud, Sprout } from 'lucide-react'
 import NavAlertBadge from '@/components/NavAlertBadge'
 
 const navItems = [
@@ -10,6 +10,7 @@ const navItems = [
   { href: '/parcelles', icon: MapPin, label: 'Parcelles' },
   { href: '/cultures', icon: Leaf, label: 'Cultures' },
   { href: '/collectes', icon: ShoppingBasket, label: 'Collectes' },
+  { href: '/intrants', icon: Sprout, label: 'Intrants' },
   { href: '/stocks', icon: Package2, label: 'Stocks' },
   { href: '/paiements', icon: CreditCard, label: 'Paiements' },
   { href: '/calendrier', icon: Calendar, label: 'Calendrier' },
