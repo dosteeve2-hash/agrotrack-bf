@@ -4,8 +4,8 @@
   "description": "Gestion Agricole Intelligente",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#14532D",
-  "theme_color": "#14532D",
+  "background_color": "#0A1628",
+  "theme_color": "#0A1628",
   "orientation": "portrait",
   "icons": [
     {

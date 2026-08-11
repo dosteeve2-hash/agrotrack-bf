@@ -110,7 +110,7 @@ export default function StatistiquesPage() {
   useEffect(() => { setMounted(true) }, [])
   if (!mounted) return <div style={{ height: 400 }} />
 
-  const sliceMap = { '3m': 4, '6m': 4, '12m': 0 }
+  const sliceMap = { '3m': 4, '6m': 1, '12m': 0 }
   const data = COLLECTES_MENSUELLES.slice(sliceMap[periode])
 
   const totalCollectes = COLLECTES_MENSUELLES.reduce((s, d) => s + d.collectes, 0)
