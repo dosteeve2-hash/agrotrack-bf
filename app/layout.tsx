@@ -5,7 +5,11 @@ import ScrollToTop from '@/components/ScrollToTop'
 export const metadata: Metadata = {
   title: 'AgroTrack BF — Gestion coopératives agricoles',
   description: 'PWA offline-first pour coopératives agricoles du Burkina Faso',
-  manifest: '/manifest.json',
+  icons: {
+    apple: '/apple-touch-icon.png',
+    icon: '/android-chrome-192x192.png',
+  },
+  manifest: '/site.webmanifest',
 }
 
 export default function RootLayout({
