@@ -119,7 +119,7 @@ export default function StocksPage() {
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
               <XAxis dataKey="name" tick={{ fontSize: 9, fill: '#8899bb' }} angle={-35} textAnchor="end" axisLine={false} tickLine={false} interval={0} />
               <YAxis tick={{ fontSize: 10, fill: '#8899bb' }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ background: '#0A1628', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 11, color: 'white' }} formatter={(v: any) => [new Intl.NumberFormat('fr-FR').format(v) + ' kg', 'Quantite']} />
+              <Tooltip contentStyle={{ background: '#0A1628', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 11, color: 'white' }} formatter={(v) => [new Intl.NumberFormat('fr-FR').format(Number(v)) + ' kg', 'Quantite']} />
               <Bar dataKey="quantite" radius={[4, 4, 0, 0]}>
                 {CHART_DATA.map((d, i) => <Cell key={i} fill={d.color} />)}
               </Bar>
@@ -174,7 +174,7 @@ export default function StocksPage() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((s, i) => {
+            {filtered.map((s) => {
               const cfg = ALERTE_CFG[s.alerte]
               const pct = Math.min(100, Math.round((s.quantite / s.seuil) * 100))
               return (

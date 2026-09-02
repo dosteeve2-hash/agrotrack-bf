@@ -4,19 +4,19 @@
  *          barre de recherche, filtre statut, modal détail, bouton Nouvelle parcelle
  */
 import React from 'react'
-import { render, screen, fireEvent, cleanup } from '@testing-library/react'
+import { render, screen, fireEvent, cleanup, within } from '@testing-library/react'
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import ParcellesPage from '../app/(dashboard)/parcelles/page'
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
 vi.mock('recharts', () => ({
-  ResponsiveContainer: ({ children }: any) => <div>{children}</div>,
-  BarChart: ({ children }: any) => <div>{children}</div>,
+  ResponsiveContainer: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+  BarChart: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
   Bar: () => null,
-  LineChart: ({ children }: any) => <div>{children}</div>,
+  LineChart: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
   Line: () => null,
-  PieChart: ({ children }: any) => <div>{children}</div>,
+  PieChart: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
   Pie: () => null,
   Cell: () => null,
   XAxis: () => null,
@@ -24,7 +24,7 @@ vi.mock('recharts', () => ({
   CartesianGrid: () => null,
   Tooltip: () => null,
   Legend: () => null,
-  ComposedChart: ({ children }: any) => <div>{children}</div>,
+  ComposedChart: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
 }))
 
 vi.mock('lucide-react', () => ({
@@ -249,13 +249,13 @@ describe('ParcellesPage — modal détail', () => {
   it('32. la modal affiche "Superficie"', () => {
     render(<ParcellesPage />)
     fireEvent.click(screen.getAllByText('Parcelle Koubri A')[0])
-    expect(screen.getByText('Superficie')).toBeInTheDocument()
+    expect(within(screen.getByRole('dialog')).getByText('Superficie')).toBeInTheDocument()
   })
 
   it('33. la modal affiche "Rendement estimé" et "1800 kg/ha"', () => {
     render(<ParcellesPage />)
     fireEvent.click(screen.getAllByText('Parcelle Koubri A')[0])
-    expect(screen.getByText('Rendement estimé')).toBeInTheDocument()
+    expect(within(screen.getByRole('dialog')).getByText('Rendement estimé')).toBeInTheDocument()
     expect(screen.getByText('1800 kg/ha')).toBeInTheDocument()
   })
 

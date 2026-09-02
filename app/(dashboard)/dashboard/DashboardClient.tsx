@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { Users, Package, Weight, Banknote, Wifi, WifiOff } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useOnlineStatus } from "@/lib/useOnlineStatus"
 
 interface Stats {
   totalMembres: number
@@ -33,16 +33,7 @@ function formatFCFA(n: number) {
 }
 
 export default function DashboardClient({ stats, collectes }: Props) {
-  const [isOnline, setIsOnline] = useState(true)
-
-  useEffect(() => {
-    setIsOnline(navigator.onLine)
-    const on = () => setIsOnline(true)
-    const off = () => setIsOnline(false)
-    window.addEventListener('online', on)
-    window.addEventListener('offline', off)
-    return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off) }
-  }, [])
+  const isOnline = useOnlineStatus()
 
   const statCards = [
     { label: 'Membres actifs', value: stats.totalMembres.toString(), icon: Users, color: '#00BCD4' },

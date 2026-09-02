@@ -93,7 +93,10 @@ function DetailModal({ c, onClose }: { c:CycleCulture; onClose:()=>void }) {
   return (
     <div style={{ position:'fixed',inset:0,background:'rgba(0,0,0,0.75)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:50,padding:16 }}
       onClick={onClose}>
-      <div style={{ background:'#0A1628',borderRadius:16,padding:28,width:'100%',maxWidth:520,border:'1px solid rgba(255,255,255,0.12)',maxHeight:'90vh',overflowY:'auto' }}
+      {/* Sans role/aria-modal, un lecteur d'écran n'annonce pas une boîte de
+          dialogue — et rien ne permet de cibler le contenu du modal. */}
+      <div role="dialog" aria-modal="true" aria-label={`Détail du cycle ${c.culture} · ${c.parcelle}`}
+        style={{ background:'#0A1628',borderRadius:16,padding:28,width:'100%',maxWidth:520,border:'1px solid rgba(255,255,255,0.12)',maxHeight:'90vh',overflowY:'auto' }}
         onClick={e=>e.stopPropagation()}>
         <div style={{ display:'flex',justifyContent:'space-between',alignItems:'start',marginBottom:20 }}>
           <div>

@@ -1,14 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { useHydrated } from "@/lib/useHydrated"
 import {
   Users, ShoppingBasket, Banknote, TrendingUp, Leaf,
   MapPin, Award, BarChart3,
 } from 'lucide-react'
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts'
 
 // ─── Palette ──────────────────────────────────────────────────────────────────
@@ -104,10 +105,9 @@ const TT_STYLE = {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function StatistiquesPage() {
-  const [mounted, setMounted] = useState(false)
+  const mounted = useHydrated()
   const [periode, setPeriode] = useState<'3m' | '6m' | '12m'>('6m')
 
-  useEffect(() => { setMounted(true) }, [])
   if (!mounted) return <div style={{ height: 400 }} />
 
   const sliceMap = { '3m': 4, '6m': 4, '12m': 0 }
@@ -188,13 +188,13 @@ export default function StatistiquesPage() {
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
             <XAxis dataKey="mois" tick={{ fill: TEXT2, fontSize: 12 }} axisLine={false} tickLine={false} />
             <YAxis yAxisId="left"  tick={{ fill: TEXT2, fontSize: 11 }} axisLine={false} tickLine={false}
-              tickFormatter={(v: any) => v >= 1000 ? (v / 1000) + 'k' : v} />
+              tickFormatter={(v) => Number(v) >= 1000 ? (Number(v) / 1000) + 'k' : String(v)} />
             <YAxis yAxisId="right" orientation="right" tick={{ fill: TEXT2, fontSize: 11 }} axisLine={false} tickLine={false}
-              tickFormatter={(v: any) => (v / 1_000_000).toFixed(1) + 'M'} />
+              tickFormatter={(v) => (Number(v) / 1_000_000).toFixed(1) + 'M'} />
             <Tooltip contentStyle={TT_STYLE}
-              formatter={(v: any, name: any) => name === 'collectes'
-                ? [v.toLocaleString('fr') + ' kg', 'Collectes']
-                : [(v / 1_000_000).toFixed(2) + 'M FCFA', 'Revenus']} />
+              formatter={(v, name) => name === 'collectes'
+                ? [Number(v).toLocaleString('fr') + ' kg', 'Collectes']
+                : [(Number(v) / 1_000_000).toFixed(2) + 'M FCFA', 'Revenus']} />
             <Area yAxisId="left"  type="monotone" dataKey="collectes" stroke={GOLD} strokeWidth={2}
               fill="url(#gradCollectes)" dot={{ fill: GOLD, r: 4 }} />
             <Area yAxisId="right" type="monotone" dataKey="revenus"   stroke={CYAN} strokeWidth={2}
@@ -222,9 +222,9 @@ export default function StatistiquesPage() {
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
               <XAxis dataKey="culture" tick={{ fill: TEXT2, fontSize: 12 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: TEXT2, fontSize: 11 }} axisLine={false} tickLine={false}
-                tickFormatter={(v: any) => (v / 1000).toFixed(0) + 'k'} />
+                tickFormatter={(v) => (Number(v) / 1000).toFixed(0) + 'k'} />
               <Tooltip contentStyle={TT_STYLE}
-                formatter={(v: any) => [v.toLocaleString('fr') + ' kg', 'Production']} />
+                formatter={(v) => [Number(v).toLocaleString('fr') + ' kg', 'Production']} />
               <Bar dataKey="kg" radius={[6, 6, 0, 0]}>
                 {PRODUCTION_PAR_CULTURE.map((e) => (
                   <Cell key={e.culture} fill={e.color} />
@@ -255,7 +255,7 @@ export default function StatistiquesPage() {
                   ))}
                 </Pie>
                 <Tooltip contentStyle={TT_STYLE}
-                  formatter={(v: any) => [v.toLocaleString('fr') + ' kg', 'Production']} />
+                  formatter={(v) => [Number(v).toLocaleString('fr') + ' kg', 'Production']} />
               </PieChart>
             </ResponsiveContainer>
             <div className="flex-1 space-y-2.5">

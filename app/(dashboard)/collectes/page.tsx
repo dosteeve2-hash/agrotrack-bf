@@ -136,7 +136,7 @@ export default function CollectesPage() {
             <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.4)' }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.4)' }} axisLine={false} tickLine={false} />
             <Tooltip contentStyle={{ background: '#0A1628', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 12, color: 'white' }}
-              formatter={(v: any) => [`${v.toLocaleString('fr-FR')} kg`, 'Volume']} />
+              formatter={(v) => [`${Number(v).toLocaleString('fr-FR')} kg`, 'Volume']} />
             <Bar dataKey="kg" radius={[6, 6, 0, 0]}>
               {chartData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
             </Bar>
