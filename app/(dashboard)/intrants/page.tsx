@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { Sprout, FlaskConical, Package, AlertTriangle, Search, Plus, X } from 'lucide-react'
 import { toast, Toaster } from 'sonner'
+import { useHydrated } from "@/lib/useHydrated"
 
 const NAVY = '#0A1628'
 const GOLD = '#D4AF37'
@@ -67,8 +68,7 @@ function expiresSoon(d: string) {
 const EMPTY_FORM = { nom: '', categorie: 'Engrais', culture: 'Toutes', unite: 'kg', prixUnitaire: '', stockDisponible: '', seuilAlerte: '', fournisseur: '' }
 
 export default function IntrantsPage() {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
+  const mounted = useHydrated()
 
   const [search, setSearch]         = useState('')
   const [filterCat, setFilterCat]   = useState('Toutes')
@@ -347,7 +347,7 @@ export default function IntrantsPage() {
             }}
               className="w-full mt-5 py-2.5 rounded-xl text-sm font-bold transition-opacity hover:opacity-90"
               style={{ background: GOLD, color: NAVY }}>
-              Créer l'intrant
+              Créer l&apos;intrant
             </button>
           </div>
         </div>

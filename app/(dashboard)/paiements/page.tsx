@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, DollarSign, Clock, CheckCircle, TrendingUp, X, Phone, Hash } from 'lucide-react'
+import { Plus, DollarSign, Clock, CheckCircle, TrendingUp, X, Phone } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell,
@@ -124,8 +124,8 @@ export default function PaiementsPage() {
             <BarChart data={METHODE_TOTAUX} margin={{ top: 0, right: 0, left: -10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
               <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#8899bb' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 9, fill: '#8899bb' }} axisLine={false} tickLine={false} tickFormatter={(v: any) => (v / 1000).toFixed(0) + 'k'} />
-              <Tooltip contentStyle={{ background: '#0A1628', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 11, color: 'white' }} formatter={(v: any) => [fmtFCFA(v), 'Total']} />
+              <YAxis tick={{ fontSize: 9, fill: '#8899bb' }} axisLine={false} tickLine={false} tickFormatter={(v) => (Number(v) / 1000).toFixed(0) + 'k'} />
+              <Tooltip contentStyle={{ background: '#0A1628', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 11, color: 'white' }} formatter={(v) => [fmtFCFA(Number(v)), 'Total']} />
               <Bar dataKey="total" radius={[4, 4, 0, 0]}>
                 {METHODE_TOTAUX.map((d, i) => <Cell key={i} fill={d.color} />)}
               </Bar>

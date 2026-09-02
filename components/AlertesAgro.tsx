@@ -39,8 +39,6 @@ function buildMeteoAlertes(temperature: number, humidity: number): Alerte[] {
   return alertes
 }
 
-export let alertesCritiquesCount = 0
-
 export default function AlertesAgro() {
   const [alertes, setAlertes] = useState<Alerte[]>(ALERTES_STATIQUES)
   const [meteoLoaded, setMeteoLoaded] = useState(false)
@@ -71,7 +69,6 @@ export default function AlertesAgro() {
   }
 
   const nbCritiques = alertes.filter(a => a.niveau === 'critique').length
-  alertesCritiquesCount = nbCritiques
 
   if (alertes.length === 0 && meteoLoaded) {
     return (

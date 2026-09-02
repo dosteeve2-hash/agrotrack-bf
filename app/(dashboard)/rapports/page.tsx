@@ -1,20 +1,20 @@
 'use client'
 
 // app/(dashboard)/rapports/page.tsx
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Printer, Users, Wheat, Banknote, AlertTriangle } from 'lucide-react'
 import {
   KPI_DATA, INCIDENTS_MOCK, MOIS_OPTIONS, GRAVITE_STYLES, TYPE_COLORS, fmtFCFA,
 } from './rapports.data'
 import { RapportsProduction } from './RapportsProduction'
 import PDFExportButton from '@/components/PDFExportButton'
+import { useHydrated } from "@/lib/useHydrated"
 
 export default function RapportsPage() {
-  const [mounted, setMounted] = useState(false)
+  const mounted = useHydrated()
   const [mois,    setMois]    = useState('07')
   const [annee,   setAnnee]   = useState('2026')
 
-  useEffect(() => setMounted(true), [])
   if (!mounted) return null
 
   const key = `${annee}-${mois}`

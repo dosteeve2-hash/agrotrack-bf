@@ -104,8 +104,8 @@ export default function FinancesPage() {
           <BarChart data={CHART_DATA}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
             <XAxis dataKey="mois" tick={{ fill: '#8899bb', fontSize: 11 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: '#8899bb', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v: any) => `${v}k`} />
-            <Tooltip contentStyle={{ backgroundColor: '#0c1a34', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 8, color: 'white', fontSize: 12 }} formatter={(v: any) => [`${v} k FCFA`]} />
+            <YAxis tick={{ fill: '#8899bb', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}k`} />
+            <Tooltip contentStyle={{ backgroundColor: '#0c1a34', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 8, color: 'white', fontSize: 12 }} formatter={(v) => [`${v} k FCFA`]} />
             <Legend wrapperStyle={{ fontSize: 12, color: '#8899bb' }} />
             <Bar dataKey="revenus"  name="Revenus"  fill="#4ade80" radius={[4, 4, 0, 0]} />
             <Bar dataKey="depenses" name="Dépenses" fill="#f87171" radius={[4, 4, 0, 0]} />

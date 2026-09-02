@@ -4,19 +4,19 @@
  *          phases, recherche, filtre, modal détail cycle, bouton Nouveau cycle
  */
 import React from 'react'
-import { render, screen, fireEvent, cleanup } from '@testing-library/react'
+import { render, screen, fireEvent, cleanup, within } from '@testing-library/react'
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import CulturesPage from '../app/(dashboard)/cultures/page'
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
 vi.mock('recharts', () => ({
-  ResponsiveContainer: ({ children }: any) => <div>{children}</div>,
-  BarChart: ({ children }: any) => <div>{children}</div>,
+  ResponsiveContainer: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+  BarChart: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
   Bar: () => null,
-  LineChart: ({ children }: any) => <div>{children}</div>,
+  LineChart: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
   Line: () => null,
-  PieChart: ({ children }: any) => <div>{children}</div>,
+  PieChart: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
   Pie: () => null,
   Cell: () => null,
   XAxis: () => null,
@@ -24,7 +24,7 @@ vi.mock('recharts', () => ({
   CartesianGrid: () => null,
   Tooltip: () => null,
   Legend: () => null,
-  ComposedChart: ({ children }: any) => <div>{children}</div>,
+  ComposedChart: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
 }))
 
 vi.mock('lucide-react', () => ({
@@ -194,12 +194,13 @@ describe('CulturesPage — phases', () => {
     expect(els.length).toBeGreaterThan(0)
   })
 
-  it('26. affiche les 6 phases dans la timeline (via la table)', () => {
+  it('26. affiche les 6 phases dans la timeline du modal', () => {
     render(<CulturesPage />)
-    // All phase labels appear either in table badges or timeline
+    fireEvent.click(screen.getByText('CC01').closest('tr')!)
+    const modal = within(screen.getByRole('dialog'))
     const phases = ['Semis', 'Levée', 'Croissance', 'Floraison', 'Maturation', 'Récolte']
     for (const phase of phases) {
-      expect(screen.getAllByText(phase).length).toBeGreaterThan(0)
+      expect(modal.getAllByText(phase).length).toBeGreaterThan(0)
     }
   })
 })
@@ -224,9 +225,10 @@ describe('CulturesPage — recherche et filtres', () => {
     render(<CulturesPage />)
     const input = screen.getByPlaceholderText(/Rechercher cycle, parcelle/)
     fireEvent.change(input, { target: { value: 'Sorgho' } })
-    const els = screen.getAllByText('Sorgho')
-    expect(els.length).toBeGreaterThan(0)
-    expect(screen.queryByText('Maïs')).not.toBeInTheDocument()
+    const table = within(screen.getByRole('table'))
+    expect(table.getAllByText('Sorgho').length).toBeGreaterThan(0)
+    // « Maïs » subsiste comme option du select : le filtre ne vide que le tableau.
+    expect(table.queryByText('Maïs')).not.toBeInTheDocument()
   })
 
   it('30. les boutons de filtre statut "En cours", "Terminée", "Abandonnée" sont présents', () => {
@@ -260,7 +262,7 @@ describe('CulturesPage — recherche et filtres', () => {
 
   it('34. le select "Toutes cultures" est présent', () => {
     render(<CulturesPage />)
-    expect(screen.getByDisplayValue('Toutes')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('Toutes cultures')).toBeInTheDocument()
   })
 })
 
@@ -287,7 +289,7 @@ describe('CulturesPage — modal détail cycle', () => {
     render(<CulturesPage />)
     const row = screen.getByText('CC01').closest('tr')!
     fireEvent.click(row)
-    expect(screen.getByText('Superficie')).toBeInTheDocument()
+    expect(within(screen.getByRole('dialog')).getByText('Superficie')).toBeInTheDocument()
   })
 
   it('38. la modal affiche "Date de semis"', () => {
