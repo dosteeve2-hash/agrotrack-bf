@@ -202,8 +202,8 @@ export default function PaiementsPage() {
       </div>
 
       {/* Table */}
-      <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <div style={{ ...card, padding: 0, overflowX: 'auto' }}>
+        <table style={{ width: '100%', minWidth: 720, borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ background: 'rgba(0,212,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
               {['Ref', 'Membre', 'Produit / Qt', 'Montant', 'Date', 'Methode', 'Statut', 'Detail'].map(h => (

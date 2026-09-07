@@ -227,8 +227,8 @@ export default function CulturesPage() {
       </div>
 
       {/* Table */}
-      <div style={{ background:'#0c1a34',borderRadius:12,border:'1px solid rgba(255,255,255,0.08)',overflow:'hidden' }}>
-        <table style={{ width:'100%',borderCollapse:'collapse' }}>
+      <div style={{ background:'#0c1a34',borderRadius:12,border:'1px solid rgba(255,255,255,0.08)',overflowX:'auto' }}>
+        <table style={{ width:'100%',minWidth:720,borderCollapse:'collapse' }}>
           <thead>
             <tr style={{ borderBottom:'1px solid rgba(255,255,255,0.08)' }}>
               {['ID','Culture','Parcelle','Superficie','Semis','Récolte','Phase','Statut'].map(h=>(
