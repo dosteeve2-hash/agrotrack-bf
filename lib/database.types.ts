@@ -11,6 +11,8 @@ export type Culture =
   | 'mil' | 'sorgho' | 'mais' | 'coton' | 'sesame' | 'karite' | 'arachide' | 'niebe'
 
 export type StatutMembre = 'actif' | 'inactif'
+export type TypeSol = 'lateritique' | 'argilo_sableux' | 'sablonneux' | 'limoneux'
+export type StatutParcelle = 'active' | 'en_repos' | 'en_preparation' | 'recoltee'
 export type StatutCollecte = 'en_attente' | 'validee' | 'rejetee'
 export type MoyenPaiement = 'especes' | 'orange_money' | 'wave' | 'virement'
 export type RoleUtilisateur = 'gerant' | 'agent'
@@ -52,6 +54,14 @@ export interface ParcelleRow {
   culture: Culture
   /** numeric(6,2) — Supabase renvoie les `numeric` en chaine pour ne rien perdre. */
   surface_ha: string
+  type_sol: TypeSol | null
+  statut: StatutParcelle
+  date_plantation: string | null
+  date_recolte_estimee: string | null
+  /** Entier : une estimation de rendement au gramme pres n'existe pas. */
+  rendement_estime_kg_ha: number | null
+  irrigation: boolean
+  notes: string | null
   latitude: string | null
   longitude: string | null
 }
@@ -101,4 +111,18 @@ export const LIBELLE_CULTURE: Record<Culture, string> = {
 export const LIBELLE_STATUT_MEMBRE: Record<StatutMembre, string> = {
   actif: 'Actif',
   inactif: 'Inactif',
+}
+
+export const LIBELLE_TYPE_SOL: Record<TypeSol, string> = {
+  lateritique: 'Latéritique',
+  argilo_sableux: 'Argilo-sableux',
+  sablonneux: 'Sablonneux',
+  limoneux: 'Limoneux',
+}
+
+export const LIBELLE_STATUT_PARCELLE: Record<StatutParcelle, string> = {
+  active: 'Active',
+  en_repos: 'En repos',
+  en_preparation: 'En préparation',
+  recoltee: 'Récoltée',
 }

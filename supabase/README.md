@@ -74,11 +74,23 @@ stockée. Une donnée dérivée qu'on stocke est une donnée qui devient fausse.
 Même raison pour le montant d'une collecte : `montant_collecte_fcfa()` est une
 fonction, pas une colonne. Le jour où un prix est corrigé, les montants suivent.
 
+## La frontière client / serveur
+
+`lib/data/parcelles.ts` importe le client Supabase serveur, donc `next/headers`.
+Un composant client qui importerait une fonction depuis ce module ferait entrer
+`next/headers` dans le bundle navigateur, et le build échoue.
+
+D'où `lib/data/parcelles.model.ts` : les formes et les calculs purs, sans aucun
+accès à la base. C'est ce que les composants clients et les tests importent.
+Le piège est réel — il a cassé le build une fois, et les tests ne l'avaient pas
+vu parce que jsdom, lui, tolère l'import.
+
 ## Ce qui manque encore
 
 - **Les stocks** (module 4 du PRD) — pas de table, pas encore nécessaire.
 - **La synchronisation hors ligne** — `client_id` et `saisie_hors_ligne` sont
   posés, mais il n'y a ni service worker, ni IndexedDB, ni file d'attente.
   C'est la Phase 2, et c'est le vrai chantier restant.
-- **Les tests d'intégration** — impossibles sans base. Seule `agregerParcelles`,
-  qui est pure, est couverte (9 tests).
+- **Les tests d'intégration** — impossibles sans base. Seules les fonctions pures
+  sont couvertes : `agregerParcelles` (9 tests) et le rendu de la page Parcelles
+  sur fixture (46 tests).

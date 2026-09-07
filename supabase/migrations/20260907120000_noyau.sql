@@ -125,28 +125,52 @@ comment on table public.membres is
 create type public.culture as enum
   ('mil', 'sorgho', 'mais', 'coton', 'sesame', 'karite', 'arachide', 'niebe');
 
+create type public.type_sol as enum
+  ('lateritique', 'argilo_sableux', 'sablonneux', 'limoneux');
+
+create type public.statut_parcelle as enum
+  ('active', 'en_repos', 'en_preparation', 'recoltee');
+
 create table public.parcelles (
-  id             uuid primary key default gen_random_uuid(),
-  cooperative_id uuid not null references public.cooperatives(id) on delete cascade,
-  membre_id      uuid not null references public.membres(id) on delete cascade,
-  client_id      uuid not null default gen_random_uuid(),
-  nom            text,
-  culture        public.culture not null,
-  surface_ha     numeric(6, 2) not null check (surface_ha > 0),
-  latitude       numeric(9, 6),
-  longitude      numeric(9, 6),
-  creee_le       timestamptz not null default now(),
-  modifiee_le    timestamptz not null default now(),
+  id                     uuid primary key default gen_random_uuid(),
+  cooperative_id         uuid not null references public.cooperatives(id) on delete cascade,
+  membre_id              uuid not null references public.membres(id) on delete cascade,
+  client_id              uuid not null default gen_random_uuid(),
+  nom                    text,
+  culture                public.culture not null,
+  surface_ha             numeric(6, 2) not null check (surface_ha > 0),
+  type_sol               public.type_sol,
+  statut                 public.statut_parcelle not null default 'active',
+  date_plantation        date,
+  date_recolte_estimee   date,
+  rendement_estime_kg_ha integer check (rendement_estime_kg_ha >= 0),
+  irrigation             boolean not null default false,
+  notes                  text,
+  latitude               numeric(9, 6),
+  longitude              numeric(9, 6),
+  creee_le               timestamptz not null default now(),
+  modifiee_le            timestamptz not null default now(),
   unique (cooperative_id, client_id),
   -- Le GPS est facultatif, mais pas a moitie : une latitude sans longitude
   -- ne situe rien.
-  check ((latitude is null) = (longitude is null))
+  check ((latitude is null) = (longitude is null)),
+  -- Une recolte prevue avant le semis est une faute de saisie, pas une saison
+  -- exceptionnelle.
+  check (date_recolte_estimee is null
+         or date_plantation is null
+         or date_recolte_estimee >= date_plantation)
 );
 
 create index parcelles_membre_idx on public.parcelles (membre_id);
 
 comment on column public.parcelles.surface_ha is
   'Des hectares, pas des francs : les decimales sont ici legitimes.';
+comment on column public.parcelles.rendement_estime_kg_ha is
+  'Des kilos par hectare, en entier. Une estimation au gramme pres n''existe pas.';
+comment on table public.parcelles is
+  'Le village n''est pas ici : il est sur le membre. Une parcelle appartient a un
+   producteur, et un producteur habite un village — le dupliquer garantirait qu''un
+   jour les deux se contrediront.';
 
 -- ── Collectes ───────────────────────────────────────────────────────────────
 
