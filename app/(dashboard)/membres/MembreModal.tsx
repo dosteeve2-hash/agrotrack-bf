@@ -1,18 +1,22 @@
 // app/(dashboard)/membres/MembreModal.tsx
 import { X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import type { FormState, Culture } from './membres.data'
-import { VILLAGES, CULTURES } from './membres.data'
+import type { Culture } from '@/lib/database.types'
+import { LIBELLE_CULTURE } from '@/lib/database.types'
+import type { FormState } from './membres.data'
+import { CULTURES_SAISISSABLES } from './membres.data'
 
 interface Props {
   open: boolean
   form: FormState
+  erreur?: string | null
+  enCours?: boolean
   onClose: () => void
   onChange: (patch: Partial<FormState>) => void
   onSubmit: () => void
 }
 
-export function MembreModal({ open, form, onClose, onChange, onSubmit }: Props) {
+export function MembreModal({ open, form, erreur, enCours, onClose, onChange, onSubmit }: Props) {
   return (
     <AnimatePresence>
       {open && (
@@ -51,17 +55,19 @@ export function MembreModal({ open, form, onClose, onChange, onSubmit }: Props) 
                   className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Village</label>
-                <select value={form.village} onChange={e => onChange({ village: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-cyan-400/50">
-                  {VILLAGES.filter(v => v !== 'Tous').map(v => <option key={v}>{v}</option>)}
-                </select>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Village *</label>
+                <input type="text" value={form.village}
+                  onChange={e => onChange({ village: e.target.value })}
+                  placeholder="Koudougou"
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Culture principale</label>
                 <select value={form.culture} onChange={e => onChange({ culture: e.target.value as Culture })}
                   className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-cyan-400/50">
-                  {CULTURES.filter(c => c !== 'Toutes').map(c => <option key={c}>{c}</option>)}
+                  {CULTURES_SAISISSABLES.map(c => (
+                    <option key={c} value={c}>{LIBELLE_CULTURE[c]}</option>
+                  ))}
                 </select>
               </div>
               <div>
@@ -71,6 +77,10 @@ export function MembreModal({ open, form, onClose, onChange, onSubmit }: Props) 
                   placeholder="2.5"
                   className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50" />
               </div>
+              {erreur && (
+                <p role="alert" className="text-sm rounded-lg px-3 py-2"
+                  style={{ background: '#fef2f2', color: '#b91c1c' }}>{erreur}</p>
+              )}
             </div>
 
             <div className="flex gap-3 mt-6">
@@ -78,10 +88,10 @@ export function MembreModal({ open, form, onClose, onChange, onSubmit }: Props) 
                 className="flex-1 px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                 Annuler
               </button>
-              <button onClick={onSubmit} disabled={!form.nom.trim()}
+              <button onClick={onSubmit} disabled={!form.nom.trim() || !form.village.trim() || enCours}
                 className="flex-1 px-4 py-2 text-sm font-semibold rounded-lg transition-all hover:opacity-90 disabled:opacity-40"
                 style={{ background: '#D4AF37', color: '#0A1628' }}>
-                Ajouter
+                {enCours ? 'Enregistrement…' : 'Ajouter'}
               </button>
             </div>
           </motion.div>

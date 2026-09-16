@@ -1,10 +1,11 @@
 // app/(dashboard)/membres/MembresList.tsx
 import { MapPin } from 'lucide-react'
-import type { Membre, Culture } from './membres.data'
+import type { MembreVue } from '@/lib/data/membres'
+import { LIBELLE_CULTURE, LIBELLE_STATUT_MEMBRE } from '@/lib/database.types'
 import { CULTURE_COLORS, AVATAR_COLORS, initiales } from './membres.data'
 
 interface Props {
-  membres: Membre[]
+  membres: MembreVue[]
 }
 
 export function MembresList({ membres }: Props) {
@@ -26,17 +27,26 @@ export function MembresList({ membres }: Props) {
                   <MapPin className="w-3 h-3" />{m.village}
                 </p>
               </div>
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-medium hidden sm:inline-block"
-                style={{ background: CULTURE_COLORS[m.culture as Culture] + '20', color: CULTURE_COLORS[m.culture as Culture] }}>
-                {m.culture}
+              {/* Un producteur cultive souvent plusieurs choses. Deux pastilles
+                  tiennent sur un telephone ; au-dela on compte. */}
+              <span className="hidden sm:flex items-center gap-1">
+                {m.cultures.slice(0, 2).map(c => (
+                  <span key={c} className="px-2.5 py-0.5 rounded-full text-xs font-medium"
+                    style={{ background: CULTURE_COLORS[c] + '20', color: CULTURE_COLORS[c] }}>
+                    {LIBELLE_CULTURE[c]}
+                  </span>
+                ))}
+                {m.cultures.length > 2 && (
+                  <span className="text-xs text-gray-400">+{m.cultures.length - 2}</span>
+                )}
               </span>
-              <span className="text-sm text-gray-600 hidden md:block w-14 text-right">{m.surface} ha</span>
+              <span className="text-sm text-gray-600 hidden md:block w-14 text-right">{m.surfaceTotale} ha</span>
               <span className="px-2 py-0.5 rounded-full text-xs font-medium w-16 text-center"
                 style={{
-                  background: m.statut === 'Actif' ? '#dcfce7' : '#f3f4f6',
-                  color:      m.statut === 'Actif' ? '#15803d' : '#6b7280',
+                  background: m.statut === 'actif' ? '#dcfce7' : '#f3f4f6',
+                  color:      m.statut === 'actif' ? '#15803d' : '#6b7280',
                 }}>
-                {m.statut}
+                {LIBELLE_STATUT_MEMBRE[m.statut]}
               </span>
               <span className="text-xs text-gray-400 hidden lg:block w-24 text-right">
                 {new Date(m.dateAdhesion).toLocaleDateString('fr-FR')}

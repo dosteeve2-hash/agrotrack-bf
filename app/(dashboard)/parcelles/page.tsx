@@ -1,341 +1,43 @@
-'use client'
+// app/(dashboard)/parcelles/page.tsx
+import { listerParcelles } from '@/lib/data/parcelles'
+import { listerMembres } from '@/lib/data/membres'
+import { ParcellesVue } from './ParcellesVue'
 
-import { useState } from 'react'
-import { Map, Sprout, TrendingUp, Droplets, Plus, Search } from 'lucide-react'
-import {
-  BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-} from 'recharts'
-
-interface Parcelle {
-  id: string; nom: string; superficie: number; village: string; typeSol: string
-  culturePrincipale: string; datePlantation: string; dateRecolteEstimee: string
-  statut: 'Active' | 'En repos' | 'En préparation' | 'Récoltée'
-  rendementEstime: number; irrigation: boolean; notes: string
-}
-
-const STATUTS = ['Active', 'En repos', 'En préparation', 'Récoltée'] as const
-type Statut = typeof STATUTS[number]
-
-function sStyle(s: string) {
-  const m: Record<string, { bg: string; color: string }> = {
-    'Active':          { bg:'#10b981', color:'white' },
-    'En repos':        { bg:'#4A90D9', color:'white' },
-    'En préparation':  { bg:'#f97316', color:'white' },
-    'Récoltée':        { bg:'#D4AF37', color:'#0A1628' },
-  }
-  return m[s] ?? { bg:'#D4AF37', color:'white' }
-}
-
-const PIE_COLORS: Record<string, string> = {
-  'Active':'#10b981','En repos':'#4A90D9','En préparation':'#f97316','Récoltée':'#D4AF37',
-}
-
-const MOCK: Parcelle[] = [
-  { id:'P01', nom:'Parcelle Koubri A', superficie:2.5, village:'Koubri', typeSol:'Latéritique',
-    culturePrincipale:'Maïs', datePlantation:'2026-05-15', dateRecolteEstimee:'2026-09-10',
-    statut:'Active', rendementEstime:1800, irrigation:true, notes:'Sol bien drainé, bonne humidité résiduelle.' },
-  { id:'P02', nom:'Parcelle Saponé B', superficie:1.8, village:'Saponé', typeSol:'Latéritique',
-    culturePrincipale:'Sorgho', datePlantation:'2026-06-01', dateRecolteEstimee:'2026-10-15',
-    statut:'Active', rendementEstime:1200, irrigation:false, notes:'Culture pluviale, bon peuplement.' },
-  { id:'P03', nom:'Parcelle Kombissiri C', superficie:3.2, village:'Kombissiri', typeSol:'Argilo-sableux',
-    culturePrincipale:'Coton', datePlantation:'2026-05-20', dateRecolteEstimee:'2026-11-01',
-    statut:'Active', rendementEstime:900, irrigation:false, notes:'Traitement phytosanitaire semaine 28.' },
-  { id:'P04', nom:'Parcelle Manga D', superficie:1.5, village:'Manga', typeSol:'Latéritique',
-    culturePrincipale:'Mil', datePlantation:'2026-06-10', dateRecolteEstimee:'2026-10-20',
-    statut:'En préparation', rendementEstime:800, irrigation:false, notes:'Labour motorisé en cours.' },
-  { id:'P05', nom:'Parcelle Pô E', superficie:2.0, village:'Pô', typeSol:'Sablonneux',
-    culturePrincipale:'Sésame', datePlantation:'2026-05-25', dateRecolteEstimee:'2026-09-05',
-    statut:'Active', rendementEstime:700, irrigation:false, notes:'Zone semi-aride, pluviométrie suivie.' },
-  { id:'P06', nom:'Parcelle Tenkodogo F', superficie:4.0, village:'Tenkodogo', typeSol:'Latéritique',
-    culturePrincipale:'Niébé', datePlantation:'2026-06-15', dateRecolteEstimee:'2026-09-30',
-    statut:'Active', rendementEstime:600, irrigation:true, notes:'Irrigation goutte-à-goutte fonctionnelle.' },
-  { id:'P07', nom:'Parcelle Léo G', superficie:2.8, village:'Léo', typeSol:'Latéritique',
-    culturePrincipale:'Arachide', datePlantation:'2026-06-05', dateRecolteEstimee:'2026-09-25',
-    statut:'Active', rendementEstime:1100, irrigation:false, notes:'Variété améliorée INERA, bon suivi.' },
-  { id:'P08', nom:'Parcelle Koubri H', superficie:1.2, village:'Koubri', typeSol:'Latéritique',
-    culturePrincipale:'Sorgho', datePlantation:'2025-10-01', dateRecolteEstimee:'2026-02-15',
-    statut:'Récoltée', rendementEstime:1300, irrigation:false, notes:'Saison sèche productive, stock constitué.' },
-  { id:'P09', nom:'Parcelle Saponé I', superficie:3.5, village:'Saponé', typeSol:'Argilo-sableux',
-    culturePrincipale:'Maïs', datePlantation:'2026-06-20', dateRecolteEstimee:'2026-10-10',
-    statut:'En repos', rendementEstime:1600, irrigation:true, notes:'Jachère courte, préparation prochaine saison.' },
-  { id:'P10', nom:'Parcelle Manga J', superficie:2.2, village:'Manga', typeSol:'Sablonneux',
-    culturePrincipale:'Mil', datePlantation:'2026-07-01', dateRecolteEstimee:'2026-11-15',
-    statut:'En préparation', rendementEstime:750, irrigation:false, notes:'Épandage fumure organique planifié.' },
-]
-
-function buildBarData(ps: Parcelle[]) {
-  const m: Record<string, { total:number; n:number }> = {}
-  for (const p of ps) {
-    if (!m[p.culturePrincipale]) m[p.culturePrincipale] = { total:0, n:0 }
-    m[p.culturePrincipale].total += p.rendementEstime
-    m[p.culturePrincipale].n += 1
-  }
-  return Object.entries(m).map(([culture, v]) => ({ culture, rendement:Math.round(v.total/v.n) }))
-}
-
-function buildPieData(ps: Parcelle[]) {
-  const m: Record<string, number> = {}
-  for (const p of ps) m[p.statut] = (m[p.statut] || 0) + 1
-  return Object.entries(m).map(([name, value]) => ({ name, value }))
-}
-
-function DetailModal({ p, onClose }: { p:Parcelle; onClose:()=>void }) {
+function Message({ titre, corps }: { titre: string; corps: string }) {
   return (
-    <div style={{ position:'fixed',inset:0,background:'rgba(0,0,0,0.75)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:50,padding:16 }}
-      onClick={onClose}>
-      {/* Sans role/aria-modal, un lecteur d'écran n'annonce pas une boîte de
-          dialogue — et rien ne permet de cibler le contenu du modal. */}
-      <div role="dialog" aria-modal="true" aria-label={`Détail de ${p.nom}`}
-        style={{ background:'#0A1628',borderRadius:16,padding:28,width:'100%',maxWidth:500,border:'1px solid rgba(255,255,255,0.12)' }}
-        onClick={e=>e.stopPropagation()}>
-        <div style={{ display:'flex',justifyContent:'space-between',alignItems:'start',marginBottom:20 }}>
-          <div>
-            <h2 style={{ color:'white',fontSize:18,fontWeight:700,marginBottom:6 }}>{p.nom}</h2>
-            <span style={{ fontSize:11,fontWeight:600,padding:'2px 10px',borderRadius:20,background:sStyle(p.statut).bg,color:sStyle(p.statut).color }}>
-              {p.statut}
-            </span>
-          </div>
-          <button onClick={onClose} style={{ color:'rgba(255,255,255,0.5)',background:'none',border:'none',cursor:'pointer',fontSize:22,lineHeight:1 }}>✕</button>
-        </div>
-        <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:16 }}>
-          {([
-            ['Village',p.village],['Superficie',`${p.superficie} ha`],
-            ['Culture',p.culturePrincipale],['Type de sol',p.typeSol],
-            ['Plantation',p.datePlantation],['Récolte estimée',p.dateRecolteEstimee],
-            ['Rendement estimé',`${p.rendementEstime} kg/ha`],['Irrigation',p.irrigation?'✓ Oui':'✗ Non'],
-          ] as [string,string][]).map(([k,v])=>(
-            <div key={k} style={{ background:'rgba(255,255,255,0.04)',borderRadius:8,padding:'10px 12px' }}>
-              <p style={{ fontSize:10,color:'rgba(255,255,255,0.4)',marginBottom:3 }}>{k}</p>
-              <p style={{ fontSize:13,color:'white',fontWeight:600 }}>{v}</p>
-            </div>
-          ))}
-        </div>
-        {p.notes && (
-          <div style={{ background:'rgba(212,175,55,0.08)',border:'1px solid rgba(212,175,55,0.2)',borderRadius:8,padding:12 }}>
-            <p style={{ fontSize:11,color:'#D4AF37',marginBottom:4 }}>Notes</p>
-            <p style={{ fontSize:13,color:'rgba(255,255,255,0.8)' }}>{p.notes}</p>
-          </div>
-        )}
+    <div style={{ background: '#0A1628', minHeight: '100vh', padding: 24, color: 'white' }}>
+      <div style={{ maxWidth: 640, margin: '0 auto', background: '#0c1a34', borderRadius: 12,
+        padding: 24, border: '1px solid rgba(255,255,255,0.08)' }}>
+        <h1 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>{titre}</h1>
+        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', lineHeight: 1.6 }}>{corps}</p>
       </div>
     </div>
   )
 }
 
-function NewModal({ onClose, onAdd }: { onClose:()=>void; onAdd:(p:Parcelle)=>void }) {
-  const [f, setF] = useState({ nom:'',superficie:'',village:'Koubri',typeSol:'Latéritique',
-    culturePrincipale:'Maïs',datePlantation:'',dateRecolteEstimee:'',
-    statut:'Active' as Statut,rendementEstime:'',irrigation:false,notes:'' })
-  const upd = (k:string,v:unknown) => setF(prev=>({ ...prev,[k]:v }))
-  const inp: React.CSSProperties = { background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.12)',
-    borderRadius:8,color:'white',padding:'8px 12px',fontSize:13,width:'100%',outline:'none',boxSizing:'border-box' }
-  const lbl: React.CSSProperties = { fontSize:11,color:'rgba(255,255,255,0.5)',marginBottom:4,display:'block' }
-  function submit() {
-    if (!f.nom || !f.superficie) return
-    onAdd({ id:`P${Date.now()}`,nom:f.nom,superficie:parseFloat(f.superficie),village:f.village,
-      typeSol:f.typeSol,culturePrincipale:f.culturePrincipale,datePlantation:f.datePlantation,
-      dateRecolteEstimee:f.dateRecolteEstimee,statut:f.statut,
-      rendementEstime:parseFloat(f.rendementEstime)||0,irrigation:f.irrigation,notes:f.notes })
+export default async function ParcellesPage() {
+  // Les deux requetes sont independantes : les lancer en serie ferait attendre
+  // l'utilisateur deux fois pour rien, et le reseau est cher ici.
+  const [resultat, resultatMembres] = await Promise.all([listerParcelles(), listerMembres()])
+
+  if (resultat.etat === 'sans_cooperative') {
+    return (
+      <Message
+        titre="Compte pas encore rattaché"
+        corps="Ton compte existe, mais aucun gérant ne l’a encore rattaché à une coopérative.
+               Tant que ce n’est pas fait, tu ne vois aucune parcelle — c’est voulu : les
+               données d’une coopérative ne sortent jamais de la coopérative."
+      />
+    )
   }
-  return (
-    <div style={{ position:'fixed',inset:0,background:'rgba(0,0,0,0.75)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:50,padding:16 }}
-      onClick={onClose}>
-      <div style={{ background:'#0A1628',borderRadius:16,padding:28,width:'100%',maxWidth:540,border:'1px solid rgba(255,255,255,0.12)',maxHeight:'90vh',overflowY:'auto' }}
-        onClick={e=>e.stopPropagation()}>
-        <div style={{ display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20 }}>
-          <h2 style={{ color:'white',fontSize:18,fontWeight:700 }}>Nouvelle parcelle</h2>
-          <button onClick={onClose} style={{ color:'rgba(255,255,255,0.5)',background:'none',border:'none',cursor:'pointer',fontSize:22 }}>✕</button>
-        </div>
-        <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:12 }}>
-          <div style={{ gridColumn:'1/-1' }}>
-            <label style={lbl}>Nom *</label>
-            <input value={f.nom} onChange={e=>upd('nom',e.target.value)} style={inp} placeholder="Parcelle Nord A" />
-          </div>
-          <div><label style={lbl}>Superficie (ha) *</label>
-            <input type="number" value={f.superficie} onChange={e=>upd('superficie',e.target.value)} style={inp} placeholder="2.5" /></div>
-          <div><label style={lbl}>Village</label>
-            <select value={f.village} onChange={e=>upd('village',e.target.value)} style={{ ...inp }}>
-              {['Koubri','Saponé','Kombissiri','Manga','Pô','Tenkodogo','Léo'].map(v=><option key={v}>{v}</option>)}
-            </select></div>
-          <div><label style={lbl}>Culture</label>
-            <select value={f.culturePrincipale} onChange={e=>upd('culturePrincipale',e.target.value)} style={{ ...inp }}>
-              {['Maïs','Sorgho','Mil','Coton','Sésame','Niébé','Arachide'].map(c=><option key={c}>{c}</option>)}
-            </select></div>
-          <div><label style={lbl}>Type de sol</label>
-            <select value={f.typeSol} onChange={e=>upd('typeSol',e.target.value)} style={{ ...inp }}>
-              {['Latéritique','Argilo-sableux','Sablonneux','Argileux'].map(t=><option key={t}>{t}</option>)}
-            </select></div>
-          <div><label style={lbl}>Statut</label>
-            <select value={f.statut} onChange={e=>upd('statut',e.target.value as Statut)} style={{ ...inp }}>
-              {STATUTS.map(s=><option key={s}>{s}</option>)}
-            </select></div>
-          <div><label style={lbl}>Rendement estimé (kg/ha)</label>
-            <input type="number" value={f.rendementEstime} onChange={e=>upd('rendementEstime',e.target.value)} style={inp} placeholder="1200" /></div>
-          <div><label style={lbl}>Date plantation</label>
-            <input type="date" value={f.datePlantation} onChange={e=>upd('datePlantation',e.target.value)} style={inp} /></div>
-          <div><label style={lbl}>Récolte estimée</label>
-            <input type="date" value={f.dateRecolteEstimee} onChange={e=>upd('dateRecolteEstimee',e.target.value)} style={inp} /></div>
-          <div style={{ display:'flex',alignItems:'center',gap:8,paddingTop:12 }}>
-            <input type="checkbox" id="irr" checked={f.irrigation} onChange={e=>upd('irrigation',e.target.checked)} />
-            <label htmlFor="irr" style={{ color:'rgba(255,255,255,0.7)',fontSize:13,cursor:'pointer' }}>Irrigation disponible</label>
-          </div>
-          <div style={{ gridColumn:'1/-1' }}><label style={lbl}>Notes</label>
-            <textarea value={f.notes} onChange={e=>upd('notes',e.target.value)}
-              style={{ ...inp,height:64,resize:'none' } as React.CSSProperties} placeholder="Observations..." />
-          </div>
-        </div>
-        <div style={{ display:'flex',gap:10,marginTop:20 }}>
-          <button onClick={onClose} style={{ flex:1,padding:'10px',borderRadius:8,border:'1px solid rgba(255,255,255,0.12)',background:'transparent',color:'rgba(255,255,255,0.6)',cursor:'pointer',fontSize:13 }}>Annuler</button>
-          <button onClick={submit} style={{ flex:1,padding:'10px',borderRadius:8,border:'none',background:'#D4AF37',color:'#0A1628',cursor:'pointer',fontSize:13,fontWeight:700 }}>Créer la parcelle</button>
-        </div>
-      </div>
-    </div>
-  )
-}
 
-export default function ParcellesPage() {
-  const [parcelles, setParcelles] = useState<Parcelle[]>(MOCK)
-  const [search, setSearch]       = useState('')
-  const [filterStatut, setFilterStatut] = useState<Statut|'Tous'>('Tous')
-  const [selected, setSelected]   = useState<Parcelle|null>(null)
-  const [showNew, setShowNew]     = useState(false)
+  if (resultat.etat === 'erreur') {
+    return <Message titre="Les parcelles n’ont pas pu être chargées" corps={resultat.message} />
+  }
 
-  const surfaceTotale = parcelles.reduce((s,p)=>s+p.superficie,0)
-  const actives       = parcelles.filter(p=>p.statut==='Active').length
-  const rendMoyen     = Math.round(parcelles.reduce((s,p)=>s+p.rendementEstime,0)/parcelles.length)
-  const prevues       = parcelles.filter(p=>p.statut==='Active'||p.statut==='En préparation').length
-  const kpis = [
-    { label:'Surface totale',   value:`${surfaceTotale.toFixed(1)} ha`,                  icon:Map,       color:'#00D4FF' },
-    { label:'Parcelles actives',value:`${actives}`,                                       icon:Sprout,    color:'#10b981' },
-    { label:'Rendement moyen',  value:`${rendMoyen.toLocaleString('fr-FR')} kg/ha`,      icon:TrendingUp, color:'#D4AF37' },
-    { label:'Récoltes prévues', value:`${prevues}`,                                       icon:Droplets,  color:'#f97316' },
-  ]
-  const barData = buildBarData(parcelles)
-  const pieData = buildPieData(parcelles)
+  const membres = resultatMembres.etat === 'ok'
+    ? resultatMembres.membres.map(m => ({ id: m.id, nom: m.nom, village: m.village }))
+    : []
 
-  const filtered = parcelles.filter(p=>{
-    const q=search.toLowerCase()
-    return (p.nom.toLowerCase().includes(q)||p.village.toLowerCase().includes(q)||p.culturePrincipale.toLowerCase().includes(q))
-      && (filterStatut==='Tous'||p.statut===filterStatut)
-  })
-
-  const card: React.CSSProperties = { background:'#0c1a34',borderRadius:12,padding:18,border:'1px solid rgba(255,255,255,0.08)' }
-
-  return (
-    <div style={{ background:'#0A1628',minHeight:'100vh',padding:24,color:'white' }}>
-
-      {/* Header */}
-      <div style={{ display:'flex',justifyContent:'space-between',alignItems:'start',marginBottom:24 }}>
-        <div>
-          <h1 style={{ fontSize:22,fontWeight:800,color:'white',marginBottom:4 }}>Parcelles agricoles</h1>
-          <p style={{ fontSize:13,color:'rgba(255,255,255,0.5)' }}>{parcelles.length} parcelles · Saison 2026</p>
-        </div>
-        <button onClick={()=>setShowNew(true)}
-          style={{ display:'flex',alignItems:'center',gap:6,padding:'9px 16px',borderRadius:8,background:'#D4AF37',color:'#0A1628',border:'none',cursor:'pointer',fontSize:13,fontWeight:700 }}>
-          <Plus size={15}/> Nouvelle parcelle
-        </button>
-      </div>
-
-      {/* KPIs */}
-      <div style={{ display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:14,marginBottom:24 }}>
-        {kpis.map(k=>(
-          <div key={k.label} style={card}>
-            <k.icon size={18} style={{ color:k.color,marginBottom:10 }} />
-            <p style={{ fontSize:12,color:'rgba(255,255,255,0.5)',marginBottom:6 }}>{k.label}</p>
-            <p style={{ fontSize:22,fontWeight:800,color:'white' }}>{k.value}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Charts */}
-      <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,marginBottom:24 }}>
-        <div style={card}>
-          <h2 style={{ fontSize:13,fontWeight:600,color:'rgba(255,255,255,0.8)',marginBottom:14 }}>Rendement estimé par culture (kg/ha)</h2>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={barData} margin={{ top:4,right:8,left:-10,bottom:0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="culture" tick={{ fontSize:11,fill:'rgba(255,255,255,0.4)' }} />
-              <YAxis tick={{ fontSize:11,fill:'rgba(255,255,255,0.4)' }} />
-              <Tooltip contentStyle={{ background:'#0A1628',border:'1px solid rgba(255,255,255,0.1)',borderRadius:8,color:'white',fontSize:12 }} />
-              <Bar dataKey="rendement" fill="#D4AF37" radius={[4,4,0,0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        <div style={card}>
-          <h2 style={{ fontSize:13,fontWeight:600,color:'rgba(255,255,255,0.8)',marginBottom:14 }}>Répartition par statut</h2>
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-              <Pie data={pieData} cx="50%" cy="50%" outerRadius={72} dataKey="value"
-                label={({ name, percent }) => `${name} ${Math.round((percent as number)*100)}%`}
-                labelLine={false} style={{ fontSize:10 }}>
-                {pieData.map(e=><Cell key={e.name} fill={PIE_COLORS[e.name]??'#ccc'} />)}
-              </Pie>
-              <Tooltip contentStyle={{ background:'#0A1628',border:'1px solid rgba(255,255,255,0.1)',borderRadius:8,color:'white',fontSize:12 }} />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Search + Filters */}
-      <div style={{ display:'flex',gap:10,marginBottom:18,flexWrap:'wrap' }}>
-        <div style={{ position:'relative',flex:1,minWidth:220 }}>
-          <Search size={14} style={{ position:'absolute',left:10,top:'50%',transform:'translateY(-50%)',color:'rgba(255,255,255,0.3)' }} />
-          <input value={search} onChange={e=>setSearch(e.target.value)}
-            placeholder="Rechercher parcelle, village, culture…"
-            style={{ background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.12)',borderRadius:8,
-              color:'white',padding:'8px 12px 8px 32px',fontSize:13,width:'100%',outline:'none',boxSizing:'border-box' }} />
-        </div>
-        {(['Tous',...STATUTS]).map(s=>{
-          const active = filterStatut===s
-          const st = sStyle(s)
-          return (
-            <button key={s} onClick={()=>setFilterStatut(s as Statut|'Tous')}
-              style={{ padding:'7px 14px',borderRadius:20,fontSize:12,fontWeight:600,cursor:'pointer',border:'none',
-                background:active?(s==='Tous'?'#D4AF37':st.bg):'rgba(255,255,255,0.06)',
-                color:active?st.color:'rgba(255,255,255,0.5)' }}>
-              {s}
-            </button>
-          )
-        })}
-      </div>
-
-      {/* Grid de cartes */}
-      <div style={{ display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:14 }}>
-        {filtered.map(p=>(
-          <div key={p.id} onClick={()=>setSelected(p)}
-            style={{ background:'#0c1a34',borderRadius:12,padding:16,border:'1px solid rgba(255,255,255,0.08)',
-              cursor:'pointer',transition:'border-color .2s' }}
-            onMouseEnter={e=>(e.currentTarget.style.borderColor='#D4AF37')}
-            onMouseLeave={e=>(e.currentTarget.style.borderColor='rgba(255,255,255,0.08)')}>
-            <div style={{ display:'flex',justifyContent:'space-between',alignItems:'start',marginBottom:8 }}>
-              <span style={{ fontSize:11,fontWeight:700,color:'rgba(255,255,255,0.35)' }}>{p.id}</span>
-              <span style={{ fontSize:10,fontWeight:600,padding:'2px 8px',borderRadius:12,background:sStyle(p.statut).bg,color:sStyle(p.statut).color }}>{p.statut}</span>
-            </div>
-            <p style={{ fontSize:13,fontWeight:700,color:'white',marginBottom:3,lineHeight:1.3 }}>{p.nom}</p>
-            <p style={{ fontSize:12,color:'rgba(255,255,255,0.45)',marginBottom:12 }}>{p.village}</p>
-            <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:6 }}>
-              <div style={{ background:'rgba(255,255,255,0.04)',borderRadius:6,padding:'6px 9px' }}>
-                <p style={{ fontSize:9,color:'rgba(255,255,255,0.38)',marginBottom:2 }}>Culture</p>
-                <p style={{ fontSize:12,fontWeight:600,color:'#00D4FF' }}>{p.culturePrincipale}</p>
-              </div>
-              <div style={{ background:'rgba(255,255,255,0.04)',borderRadius:6,padding:'6px 9px' }}>
-                <p style={{ fontSize:9,color:'rgba(255,255,255,0.38)',marginBottom:2 }}>Superficie</p>
-                <p style={{ fontSize:12,fontWeight:600,color:'#D4AF37' }}>{p.superficie} ha</p>
-              </div>
-              <div style={{ background:'rgba(255,255,255,0.04)',borderRadius:6,padding:'6px 9px',gridColumn:'1/-1' }}>
-                <p style={{ fontSize:9,color:'rgba(255,255,255,0.38)',marginBottom:2 }}>Rendement estimé</p>
-                <p style={{ fontSize:12,fontWeight:600,color:'white' }}>{p.rendementEstime.toLocaleString('fr-FR')} kg/ha</p>
-              </div>
-            </div>
-            {p.irrigation&&<div style={{ marginTop:8,display:'flex',alignItems:'center',gap:4 }}>
-              <Droplets size={12} color="#00D4FF"/><span style={{ fontSize:10,color:'#00D4FF' }}>Irrigation</span>
-            </div>}
-          </div>
-        ))}
-      </div>
-
-      {selected&&<DetailModal p={selected} onClose={()=>setSelected(null)}/>}
-      {showNew&&<NewModal onClose={()=>setShowNew(false)} onAdd={p=>{setParcelles(prev=>[...prev,p]);setShowNew(false)}}/>}
-    </div>
-  )
+  return <ParcellesVue parcelles={resultat.parcelles} membres={membres} />
 }
