@@ -43,7 +43,8 @@ export function RapportsProduction({ moisLabel, annee }: Props) {
             Bilan par culture — {moisLabel} {annee}
           </h3>
         </div>
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[720px]">
           <thead>
             <tr style={{ background: '#0A1628' }}>
               {['Culture', 'Parcelles', 'Surface totale', 'Production', 'Prix moy./kg', 'Revenus'].map(h => (
@@ -77,7 +78,8 @@ export function RapportsProduction({ moisLabel, annee }: Props) {
               <td className="px-5 py-3 font-bold" style={{ color: '#10b981' }}>{fmtFCFA(totalRevenus)}</td>
             </tr>
           </tfoot>
-        </table>
+          </table>
+        </div>
       </div>
     </>
   )
