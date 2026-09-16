@@ -1,11 +1,20 @@
 'use server'
 import { createClient } from '@/lib/supabase/server'
+import { supabaseConfigure } from '@/lib/supabase/config'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Leaf } from 'lucide-react'
 
+const SANS_SUPABASE =
+  "Ce deploiement n'a pas de Supabase configure : la connexion est impossible."
+
 async function loginAction(formData: FormData) {
   'use server'
+  // Chaque action revalide pour elle-meme : une action arrive en POST, elle ne passe
+  // pas par le garde du layout.
+  if (!supabaseConfigure()) {
+    redirect(`/auth/login?error=${encodeURIComponent(SANS_SUPABASE)}`)
+  }
   const email = formData.get('email') as string
   const password = formData.get('password') as string
   const supabase = await createClient()
@@ -18,6 +27,9 @@ async function loginAction(formData: FormData) {
 
 async function demoLoginAction() {
   'use server'
+  if (!supabaseConfigure()) {
+    redirect(`/auth/login?error=${encodeURIComponent(SANS_SUPABASE)}`)
+  }
   const supabase = await createClient()
   const { error } = await supabase.auth.signInWithPassword({
     email: 'demo@agrotrack-bf.com',
@@ -36,6 +48,7 @@ export default async function LoginPage({
 }) {
   const params = await searchParams
   const errorMsg = params.error
+  const configure = supabaseConfigure()
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4"
@@ -49,6 +62,23 @@ export default async function LoginPage({
           <p className="text-white/50 text-sm">Connectez-vous à votre coopérative</p>
         </div>
 
+        {!configure && (
+          <div
+            role="status"
+            className="rounded-xl p-4 mb-6 text-sm"
+            style={{ border: '1px solid rgba(245,158,11,0.35)', background: 'rgba(245,158,11,0.10)' }}
+          >
+            <p className="font-semibold mb-1" style={{ color: '#f0b429' }}>
+              ⚠️ Supabase n&apos;est pas configuré sur ce déploiement
+            </p>
+            <p className="text-white/70 text-xs leading-relaxed">
+              Aucune connexion n&apos;est possible ici, et le tableau de bord reste fermé.
+              Il manque <span className="font-mono text-white">NEXT_PUBLIC_SUPABASE_URL</span> et{' '}
+              <span className="font-mono text-white">NEXT_PUBLIC_SUPABASE_ANON_KEY</span>.
+            </p>
+          </div>
+        )}
+
         {/* Bloc Demo */}
         <div className="rounded-xl p-4 mb-6"
           style={{ border: '2px solid #D4AF37', background: '#D4AF3710' }}>
@@ -60,8 +90,8 @@ export default async function LoginPage({
             <p>Mot de passe : <span className="text-white font-mono">Demo2026!</span></p>
           </div>
           <form action={demoLoginAction}>
-            <button type="submit"
-              className="w-full py-2 rounded-lg text-sm font-semibold transition-all hover:opacity-90"
+            <button type="submit" disabled={!configure}
+              className="w-full py-2 rounded-lg text-sm font-semibold transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
               style={{ background: '#D4AF37', color: '#0A1628' }}>
               Accéder à la démo →
             </button>

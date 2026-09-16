@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { supabaseConfigure } from '@/lib/supabase/config'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Leaf, LayoutDashboard, Users, Package2, CreditCard, BarChart2, ShoppingBasket, LogOut, BookOpen, Settings, MapPin, Calendar, TrendingUp, Cloud, Sprout, Wrench, PieChart } from 'lucide-react'
@@ -31,6 +32,11 @@ async function logoutAction() {
 }
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  // Avant toute chose : y a-t-il un Supabase derriere ce deploiement ? Sans ce test,
+  // createClient() levait et les seize pages du tableau de bord renvoyaient 500 au lieu
+  // d'une page de connexion — la panne observee en production du 22 aout au 16 septembre.
+  if (!supabaseConfigure()) redirect('/auth/login?raison=non-configure')
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
