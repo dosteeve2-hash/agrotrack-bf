@@ -1,6 +1,7 @@
 'use server'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseConfigure } from '@/lib/supabase/config'
+import { demoConfiguree, emailDemo, motDePasseDemo } from '@/lib/demo'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Leaf } from 'lucide-react'
@@ -30,10 +31,13 @@ async function demoLoginAction() {
   if (!supabaseConfigure()) {
     redirect(`/auth/login?error=${encodeURIComponent(SANS_SUPABASE)}`)
   }
+  if (!demoConfiguree()) {
+    redirect('/auth/login?error=demo_absente')
+  }
   const supabase = await createClient()
   const { error } = await supabase.auth.signInWithPassword({
-    email: 'demo@agrotrack-bf.com',
-    password: 'Demo2026!',
+    email: emailDemo(),
+    password: motDePasseDemo(),
   })
   if (error) {
     redirect('/auth/login?error=demo_unavailable')
@@ -49,6 +53,7 @@ export default async function LoginPage({
   const params = await searchParams
   const errorMsg = params.error
   const configure = supabaseConfigure()
+  const demo = demoConfiguree()
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4"
@@ -79,24 +84,26 @@ export default async function LoginPage({
           </div>
         )}
 
-        {/* Bloc Demo */}
-        <div className="rounded-xl p-4 mb-6"
-          style={{ border: '2px solid #D4AF37', background: '#D4AF3710' }}>
-          <p className="text-sm font-semibold mb-2" style={{ color: '#D4AF37' }}>
-            🎯 Compte démo — accès immédiat
-          </p>
-          <div className="text-xs text-white/60 space-y-0.5 mb-3">
-            <p>Email : <span className="text-white font-mono">demo@agrotrack-bf.com</span></p>
-            <p>Mot de passe : <span className="text-white font-mono">Demo2026!</span></p>
+        {/* Bloc Demo — le bouton, jamais le mot de passe. Voir lib/demo.ts. */}
+        {demo && (
+          <div className="rounded-xl p-4 mb-6"
+            style={{ border: '2px solid #D4AF37', background: '#D4AF3710' }}>
+            <p className="text-sm font-semibold mb-2" style={{ color: '#D4AF37' }}>
+              🎯 Compte démo — accès immédiat
+            </p>
+            <p className="text-xs text-white/60 mb-3">
+              Un clic suffit, aucun identifiant à saisir. Les données sont fictives
+              et rien n&apos;est sauvegardé.
+            </p>
+            <form action={demoLoginAction}>
+              <button type="submit" disabled={!configure}
+                className="w-full py-2 rounded-lg text-sm font-semibold transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{ background: '#D4AF37', color: '#0A1628' }}>
+                Accéder à la démo →
+              </button>
+            </form>
           </div>
-          <form action={demoLoginAction}>
-            <button type="submit" disabled={!configure}
-              className="w-full py-2 rounded-lg text-sm font-semibold transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{ background: '#D4AF37', color: '#0A1628' }}>
-              Accéder à la démo →
-            </button>
-          </form>
-        </div>
+        )}
 
         <div className="relative flex items-center my-4">
           <div className="flex-1 border-t border-white/10"></div>

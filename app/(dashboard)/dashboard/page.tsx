@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { estCompteDemo } from '@/lib/demo'
 import Link from 'next/link'
 import { Users, ShoppingBasket, Package2, CreditCard, TrendingUp, AlertTriangle } from 'lucide-react'
 import WeatherWidget from '@/components/WeatherWidget'
@@ -18,7 +19,7 @@ const stats = [
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const isDemo = user?.email === 'demo@agrotrack-bf.com'
+  const isDemo = estCompteDemo(user?.email)
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
