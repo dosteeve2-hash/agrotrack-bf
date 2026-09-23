@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import ScrollToTop from '@/components/ScrollToTop'
 
@@ -10,6 +10,10 @@ export const metadata: Metadata = {
     icon: '/android-chrome-192x192.png',
   },
   manifest: '/site.webmanifest',
+}
+
+export const viewport: Viewport = {
+  themeColor: '#0A1628',
 }
 
 export default function RootLayout({

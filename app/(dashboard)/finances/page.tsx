@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { Download, TrendingUp, TrendingDown, DollarSign, BarChart3 } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -68,6 +69,10 @@ const S = {
 }
 
 export default function FinancesPage() {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+  if (!mounted) return null
+
   return (
     <div style={S.page}>
       {/* Header */}
