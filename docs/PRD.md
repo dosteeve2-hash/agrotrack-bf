@@ -1,4 +1,4 @@
-# AgroTrack BF — PRD
+# AgroTrack — PRD
 
 ## Vision
 Digitaliser la chaîne de valeur des coopératives agricoles burkinabèses.

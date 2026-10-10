@@ -2,17 +2,14 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import type { Culture, StatutParcelle, TypeSol } from '@/lib/database.types'
+import type { StatutParcelle } from '@/lib/database.types'
+import { nettoyerCulture } from '@/lib/cultures'
 
 export interface ResultatCreation {
   ok: boolean
   message?: string
 }
 
-const CULTURES: readonly Culture[] =
-  ['mil', 'sorgho', 'mais', 'coton', 'sesame', 'karite', 'arachide', 'niebe']
-const SOLS: readonly TypeSol[] =
-  ['lateritique', 'argilo_sableux', 'sablonneux', 'limoneux']
 const STATUTS: readonly StatutParcelle[] =
   ['active', 'en_repos', 'en_preparation', 'recoltee']
 
@@ -42,8 +39,8 @@ export async function creerParcelle(donnees: FormData): Promise<ResultatCreation
 
   const nom = String(donnees.get('nom') ?? '').trim()
   const membreId = String(donnees.get('membre_id') ?? '')
-  const culture = String(donnees.get('culture') ?? '')
-  const typeSol = String(donnees.get('type_sol') ?? '')
+  const culture = nettoyerCulture(String(donnees.get('culture') ?? ''))
+  const typeSol = nettoyerCulture(String(donnees.get('type_sol') ?? ''))
   const statut = String(donnees.get('statut') ?? '')
   const superficie = Number.parseFloat(String(donnees.get('superficie') ?? ''))
   const rendementBrut = String(donnees.get('rendement_estime') ?? '').trim()
@@ -56,8 +53,7 @@ export async function creerParcelle(donnees: FormData): Promise<ResultatCreation
   if (!Number.isFinite(superficie) || superficie <= 0) {
     return { ok: false, message: 'La superficie doit être un nombre supérieur à 0.' }
   }
-  if (!CULTURES.includes(culture as Culture)) return { ok: false, message: 'Culture inconnue.' }
-  if (!SOLS.includes(typeSol as TypeSol)) return { ok: false, message: 'Type de sol inconnu.' }
+  if (!culture) return { ok: false, message: 'La culture est obligatoire.' }
   if (!STATUTS.includes(statut as StatutParcelle)) return { ok: false, message: 'Statut inconnu.' }
   if (rendement !== null && (!Number.isFinite(rendement) || rendement < 0)) {
     return { ok: false, message: 'Le rendement estimé doit être un entier positif.' }
@@ -74,7 +70,7 @@ export async function creerParcelle(donnees: FormData): Promise<ResultatCreation
     nom,
     culture,
     surface_ha: superficie,
-    type_sol: typeSol,
+    type_sol: typeSol || null,
     statut,
     date_plantation: plantation,
     date_recolte_estimee: recolte,

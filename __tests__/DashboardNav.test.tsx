@@ -1,5 +1,5 @@
 /**
- * Suite de tests Vitest — Navigation du tableau de bord (AgroTrack BF)
+ * Suite de tests Vitest — Navigation du tableau de bord (AgroTrack)
  * Couvre : les 16 liens, le lien actif, la bascule du tiroir mobile,
  *          la fermeture (croix, voile, Échap, clic sur un lien),
  *          le verrou de défilement et le formulaire de déconnexion.
@@ -50,7 +50,7 @@ const logout = vi.fn()
 
 function afficher(pathname = '/dashboard') {
   mockPathname.value = pathname
-  return render(<DashboardNav userEmail="acmo@coop-koubri.bf" logoutAction={logout} />)
+  return render(<DashboardNav userEmail="gerant@exemple.org" logoutAction={logout} />)
 }
 
 const tiroir = () => document.getElementById('menu-lateral') as HTMLElement
@@ -72,7 +72,7 @@ describe('DashboardNav — contenu', () => {
 
   it('affiche l’adresse de l’utilisateur connecté', () => {
     afficher()
-    expect(screen.getByText('acmo@coop-koubri.bf')).toBeInTheDocument()
+    expect(screen.getByText('gerant@exemple.org')).toBeInTheDocument()
   })
 
   it('propose la déconnexion dans un formulaire', () => {

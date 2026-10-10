@@ -6,11 +6,14 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell,
 } from 'recharts'
+import EtatVide from '@/components/EtatVide'
+import { useFormatMontant } from '@/lib/compte/useParametresCompte'
+import { MOYENS_PAIEMENT, libelleCulture, libelleMoyen } from '@/lib/cultures'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 type Statut  = 'Paye' | 'En attente' | 'Partiel' | 'Rejete'
-type Methode = 'Mobile Money' | 'Especes' | 'Virement' | 'Cheque'
-type Produit = 'Coton' | 'Sesame' | 'Karite' | 'Mais' | 'Arachide' | 'Sorgho'
+type Methode = string // valeur de MOYENS_PAIEMENT (ou ancienne valeur stockée)
+type Produit = string
 
 interface Paiement {
   id: string; membre: string; montant: number; produit: Produit
@@ -19,27 +22,22 @@ interface Paiement {
 }
 
 // ─── Data ──────────────────────────────────────────────────────────────────
-const PAIEMENTS: Paiement[] = [
-  { id: 'P001', membre: 'Ouedraogo Adama',   montant: 233750, produit: 'Coton',    date: '2026-07-12', methode: 'Mobile Money', telephone: '+226 70 11 22 33', statut: 'Paye',       reference: 'MM-2026-001', quantite: 808,  unite: 'kg' },
-  { id: 'P002', membre: 'Sawadogo Fatima',   montant: 54000,  produit: 'Sesame',   date: '2026-07-12', methode: 'Especes',      telephone: '+226 76 44 55 66', statut: 'En attente', reference: '—',           quantite: 120,  unite: 'kg' },
-  { id: 'P003', membre: 'Kabore Ibrahim',    montant: 184250, produit: 'Coton',    date: '2026-07-11', methode: 'Mobile Money', telephone: '+226 65 77 88 99', statut: 'Paye',       reference: 'MM-2026-002', quantite: 637,  unite: 'kg' },
-  { id: 'P004', membre: 'Zongo Marie',       montant: 76000,  produit: 'Karite',   date: '2026-07-11', methode: 'Virement',     telephone: '+226 71 22 33 44', statut: 'En attente', reference: '—',           quantite: 200,  unite: 'kg' },
-  { id: 'P005', membre: 'Tiendrebeogo Paul', montant: 312000, produit: 'Coton',    date: '2026-07-10', methode: 'Mobile Money', telephone: '+226 70 55 66 77', statut: 'Paye',       reference: 'MM-2026-003', quantite: 1080, unite: 'kg' },
-  { id: 'P006', membre: 'Ouattara Aissata',  montant: 168000, produit: 'Mais',     date: '2026-07-10', methode: 'Especes',      telephone: '+226 65 33 44 55', statut: 'Partiel',    reference: '—',           quantite: 1155, unite: 'kg' },
-  { id: 'P007', membre: 'Beogo Celestin',    montant: 48600,  produit: 'Sesame',   date: '2026-07-09', methode: 'Mobile Money', telephone: '+226 76 88 99 00', statut: 'Paye',       reference: 'MM-2026-004', quantite: 108,  unite: 'kg' },
-  { id: 'P008', membre: 'Compaore Salimata', montant: 92500,  produit: 'Arachide', date: '2026-07-08', methode: 'Virement',     telephone: '+226 71 00 11 22', statut: 'Paye',       reference: 'VIR-2026-01', quantite: 205,  unite: 'kg' },
-  { id: 'P009', membre: 'Nana Dramane',      montant: 58800,  produit: 'Sorgho',   date: '2026-07-07', methode: 'Cheque',       telephone: '+226 70 22 33 44', statut: 'En attente', reference: 'CHQ-0041',    quantite: 490,  unite: 'kg' },
-  { id: 'P010', membre: 'Sawadogo Issa',     montant: 140000, produit: 'Coton',    date: '2026-07-06', methode: 'Mobile Money', telephone: '+226 65 55 66 77', statut: 'Rejete',     reference: '—',           quantite: 484,  unite: 'kg' },
-]
+// Aucune donnée d'exemple : les paiements viendront de la base quand ce module y sera raccordé.
+const PAIEMENTS: Paiement[] = []
 
-const METHODE_TOTAUX = ['Mobile Money', 'Especes', 'Virement', 'Cheque'].map(m => ({
-  name: m,
-  total: PAIEMENTS.filter(p => p.methode === m).reduce((a, p) => a + p.montant, 0),
-  color: m === 'Mobile Money' ? '#00D4FF' : m === 'Especes' ? '#10b981' : m === 'Virement' ? '#818CF8' : '#D4AF37',
+const COULEURS_MOYENS = ['#10b981', '#818CF8', '#00D4FF', '#D4AF37']
+const METHODE_COLOR: Record<string, string> = Object.fromEntries(
+  MOYENS_PAIEMENT.map((m, i) => [m.valeur, COULEURS_MOYENS[i % COULEURS_MOYENS.length]]),
+)
+
+const METHODE_TOTAUX = MOYENS_PAIEMENT.map(m => ({
+  name: m.libelle,
+  total: PAIEMENTS.filter(p => p.methode === m.valeur).reduce((a, p) => a + p.montant, 0),
+  color: METHODE_COLOR[m.valeur],
 }))
 
 const STATUTS: (Statut | 'Tous')[] = ['Tous', 'Paye', 'En attente', 'Partiel', 'Rejete']
-const METHODES: (Methode | 'Tous')[] = ['Tous', 'Mobile Money', 'Especes', 'Virement', 'Cheque']
+const METHODES: (Methode | 'Tous')[] = ['Tous', ...MOYENS_PAIEMENT.map(m => m.valeur)]
 
 // ─── Config ─────────────────────────────────────────────────────────────────
 const STATUT_CFG: Record<Statut, { color: string; bg: string; icon: typeof CheckCircle }> = {
@@ -49,11 +47,6 @@ const STATUT_CFG: Record<Statut, { color: string; bg: string; icon: typeof Check
   'Rejete':     { color: '#ef4444', bg: 'rgba(239,68,68,0.12)',  icon: X           },
 }
 
-const METHODE_COLOR: Record<Methode, string> = {
-  'Mobile Money': '#00D4FF', 'Especes': '#10b981', 'Virement': '#818CF8', 'Cheque': '#D4AF37',
-}
-
-const fmtFCFA = (n: number) => new Intl.NumberFormat('fr-FR').format(n) + ' FCFA'
 const card: React.CSSProperties = { backgroundColor: '#0c1a34', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: '1.25rem' }
 
 // ─── Page ───────────────────────────────────────────────────────────────────
@@ -61,6 +54,7 @@ export default function PaiementsPage() {
   const [statutFilter, setStatutFilter] = useState<Statut | 'Tous'>('Tous')
   const [methodeFilter, setMethodeFilter] = useState<Methode | 'Tous'>('Tous')
   const [selected, setSelected] = useState<Paiement | null>(null)
+  const fmt = useFormatMontant()
 
   const filtered = PAIEMENTS.filter(p =>
     (statutFilter  === 'Tous' || p.statut  === statutFilter) &&
@@ -70,7 +64,19 @@ export default function PaiementsPage() {
   const totalPaye    = PAIEMENTS.filter(p => p.statut === 'Paye').reduce((a, p) => a + p.montant, 0)
   const totalAttente = PAIEMENTS.filter(p => p.statut === 'En attente').reduce((a, p) => a + p.montant, 0)
   const totalPartiel = PAIEMENTS.filter(p => p.statut === 'Partiel').reduce((a, p) => a + p.montant, 0)
-  const tauxPaiement = Math.round((PAIEMENTS.filter(p => p.statut === 'Paye').length / PAIEMENTS.length) * 100)
+  const tauxPaiement = PAIEMENTS.length === 0 ? 0 : Math.round((PAIEMENTS.filter(p => p.statut === 'Paye').length / PAIEMENTS.length) * 100)
+
+  if (PAIEMENTS.length === 0) {
+    return (
+      <div style={{ padding: '1.5rem', color: 'white', background: '#0A1628', minHeight: '100vh' }}>
+        <h1 style={{ color: '#f0f4ff', fontWeight: 800, fontSize: '1.5rem', margin: '0 0 0.25rem' }}>Paiements</h1>
+        <p style={{ color: '#a9b6d0', fontSize: '0.85rem', margin: '0 0 1.5rem' }}>Espèces · Virement · Mobile money · Autre</p>
+        <EtatVide sombre
+          titre="Aucun paiement : enregistrez le premier"
+          texte="Les paiements versés à vos membres apparaîtront ici, dans la devise de votre compte. L’enregistrement des paiements n’est pas encore raccordé à la base dans cette version." />
+      </div>
+    )
+  }
 
   return (
     <div style={{ padding: '1.5rem', color: 'white', background: '#0A1628', minHeight: '100vh' }}>
@@ -82,7 +88,7 @@ export default function PaiementsPage() {
             <DollarSign style={{ display: 'inline', width: 20, height: 20, marginRight: 8, color: '#D4AF37', verticalAlign: 'middle' }} />
             Paiements
           </h1>
-          <p style={{ color: '#8899bb', fontSize: '0.85rem', margin: 0 }}>Mobile Money · Especes · Virements · Cheques</p>
+          <p style={{ color: '#8899bb', fontSize: '0.85rem', margin: 0 }}>Espèces · Virement · Mobile money · Autre</p>
         </div>
         <button style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#D4AF37', color: '#0A1628', border: 'none', borderRadius: 10, padding: '0.55rem 1rem', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}>
           <Plus style={{ width: 14, height: 14 }} /> Enregistrer un paiement
@@ -92,9 +98,9 @@ export default function PaiementsPage() {
       {/* KPIs */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.85rem', marginBottom: '1.5rem' }}>
         {[
-          { label: 'Total paye',       value: fmtFCFA(totalPaye),    color: '#10b981', icon: CheckCircle },
-          { label: 'En attente',       value: fmtFCFA(totalAttente), color: '#D4AF37', icon: Clock      },
-          { label: 'Partiel',          value: fmtFCFA(totalPartiel), color: '#818CF8', icon: TrendingUp },
+          { label: 'Total paye',       value: fmt(totalPaye),    color: '#10b981', icon: CheckCircle },
+          { label: 'En attente',       value: fmt(totalAttente), color: '#D4AF37', icon: Clock      },
+          { label: 'Partiel',          value: fmt(totalPartiel), color: '#818CF8', icon: TrendingUp },
           { label: 'Taux de paiement', value: `${tauxPaiement}%`,   color: '#00D4FF', icon: DollarSign },
         ].map((k, i) => (
           <div key={i} style={card}>
@@ -118,14 +124,14 @@ export default function PaiementsPage() {
         {/* BarChart par methode */}
         <div style={card}>
           <h3 style={{ color: '#f0f4ff', fontSize: '0.85rem', fontWeight: 700, marginBottom: '1rem' }}>
-            Volume par methode de paiement (FCFA)
+            Volume par moyen de paiement
           </h3>
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={METHODE_TOTAUX} margin={{ top: 0, right: 0, left: -10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
               <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#8899bb' }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 9, fill: '#8899bb' }} axisLine={false} tickLine={false} tickFormatter={(v) => (Number(v) / 1000).toFixed(0) + 'k'} />
-              <Tooltip contentStyle={{ background: '#0A1628', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 11, color: 'white' }} formatter={(v) => [fmtFCFA(Number(v)), 'Total']} />
+              <Tooltip contentStyle={{ background: '#0A1628', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: 11, color: 'white' }} formatter={(v) => [fmt(Number(v)), 'Total']} />
               <Bar dataKey="total" radius={[4, 4, 0, 0]}>
                 {METHODE_TOTAUX.map((d, i) => <Cell key={i} fill={d.color} />)}
               </Bar>
@@ -185,7 +191,7 @@ export default function PaiementsPage() {
             }}>{s}</button>
           )
         })}
-        <span style={{ color: '#8899bb', fontSize: '0.75rem', alignSelf: 'center', marginLeft: 12, marginRight: 4 }}>Methode :</span>
+        <span style={{ color: '#8899bb', fontSize: '0.75rem', alignSelf: 'center', marginLeft: 12, marginRight: 4 }}>Moyen :</span>
         {METHODES.map(m => {
           const isActive = methodeFilter === m
           const c = m !== 'Tous' ? METHODE_COLOR[m] : '#f0f4ff'
@@ -196,7 +202,7 @@ export default function PaiementsPage() {
               background: isActive ? `${c}22` : 'transparent',
               borderColor: isActive ? c : 'rgba(255,255,255,0.08)',
               color: isActive ? c : '#8899bb',
-            }}>{m}</button>
+            }}>{m === 'Tous' ? m : libelleMoyen(m)}</button>
           )
         })}
       </div>
@@ -206,7 +212,7 @@ export default function PaiementsPage() {
         <table style={{ width: '100%', minWidth: 720, borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ background: 'rgba(0,212,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-              {['Ref', 'Membre', 'Produit / Qt', 'Montant', 'Date', 'Methode', 'Statut', 'Detail'].map(h => (
+              {['Réf', 'Membre', 'Produit / Qté', 'Montant', 'Date', 'Moyen', 'Statut', 'Détail'].map(h => (
                 <th key={h} style={{ padding: '0.75rem 1rem', textAlign: 'left', fontSize: '0.7rem', color: '#8899bb', fontWeight: 600 }}>{h}</th>
               ))}
             </tr>
@@ -229,16 +235,16 @@ export default function PaiementsPage() {
                     <p style={{ color: '#5a6a85', fontSize: '0.68rem', margin: '2px 0 0' }}>{p.telephone}</p>
                   </td>
                   <td style={{ padding: '0.85rem 1rem' }}>
-                    <p style={{ color: '#00D4FF', fontWeight: 600, fontSize: '0.78rem', margin: 0 }}>{p.produit}</p>
+                    <p style={{ color: '#00D4FF', fontWeight: 600, fontSize: '0.78rem', margin: 0 }}>{libelleCulture(p.produit)}</p>
                     <p style={{ color: '#5a6a85', fontSize: '0.68rem', margin: '2px 0 0' }}>{new Intl.NumberFormat('fr-FR').format(p.quantite)} {p.unite}</p>
                   </td>
                   <td style={{ padding: '0.85rem 1rem', color: '#f0f4ff', fontWeight: 800, fontSize: '0.85rem' }}>
-                    {fmtFCFA(p.montant)}
+                    {fmt(p.montant)}
                   </td>
                   <td style={{ padding: '0.85rem 1rem', color: '#8899bb', fontSize: '0.78rem' }}>{p.date}</td>
                   <td style={{ padding: '0.85rem 1rem' }}>
                     <span style={{ padding: '3px 8px', borderRadius: 12, fontSize: '0.7rem', fontWeight: 600, background: `${METHODE_COLOR[p.methode]}22`, color: METHODE_COLOR[p.methode] }}>
-                      {p.methode}
+                      {libelleMoyen(p.methode)}
                     </span>
                   </td>
                   <td style={{ padding: '0.85rem 1rem' }}>
@@ -284,12 +290,12 @@ export default function PaiementsPage() {
               </div>
 
               {[
-                ['Montant',    fmtFCFA(selected.montant)],
-                ['Produit',    `${selected.produit} — ${new Intl.NumberFormat('fr-FR').format(selected.quantite)} ${selected.unite}`],
+                ['Montant',    fmt(selected.montant)],
+                ['Produit',    `${libelleCulture(selected.produit)} — ${new Intl.NumberFormat('fr-FR').format(selected.quantite)} ${selected.unite}`],
                 ['Date',       selected.date],
-                ['Methode',    selected.methode],
+                ['Moyen',      libelleMoyen(selected.methode)],
                 ['Reference',  selected.reference],
-                ['Telephone',  selected.telephone],
+                ['Téléphone',  selected.telephone],
               ].map(([label, value]) => (
                 <div key={label} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.7rem 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                   <span style={{ color: '#8899bb', fontSize: '0.8rem' }}>{label}</span>

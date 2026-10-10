@@ -1,7 +1,7 @@
-# AgroTrack BF — Lovable Protocol
+# AgroTrack — Lovable Protocol
 
 ## Vision
-AgroTrack BF est la PWA offline-first qui digitalise les coopératives agricoles burkinabèses. Des champs de coton de la Boucle du Mouhoun aux marchés de sésame du Sahel, elle permet aux agents de coopérative d'enregistrer membres, collectes et paiements sans connexion internet — avec sync automatique dès le retour du réseau.
+AgroTrack est la PWA offline-first qui digitalise les coopératives agricoles burkinabèses. Des champs de coton de la Boucle du Mouhoun aux marchés de sésame du Sahel, elle permet aux agents de coopérative d'enregistrer membres, collectes et paiements sans connexion internet — avec sync automatique dès le retour du réseau.
 
 ## URL de production
 https://agrotrack-bf.vercel.app
@@ -90,7 +90,7 @@ https://agrotrack-bf.vercel.app
 
 ## Flux utilisateur clé — Collecte sésame sur le terrain
 
-1. Hamidou arrive au champ sans réseau → ouvre AgroTrack BF (PWA installée)
+1. Hamidou arrive au champ sans réseau → ouvre AgroTrack (PWA installée)
 2. Recherche Konaté Seydou dans le registre membres (offline)
 3. Saisit pesée : 185 kg grade A → enregistrement local IndexedDB
 4. Continue avec 12 autres producteurs → tout stocké offline

@@ -1,6 +1,6 @@
-# 🌾 AgroTrack BF
+# 🌾 AgroTrack
 
-> Gestion de coopératives agricoles, offline-first. Conçu pour le terrain burkinabè.
+> Suivi des récoltes et gestion de coopératives agricoles, offline-first. Indépendant du pays : chaque compte choisit son pays et sa devise.
 
 [![Status](https://img.shields.io/badge/Status-En%20conception-blue)](.)
 [![Part of FORGE Afrika](https://img.shields.io/badge/FORGE%20Afrika-Ecosystem-D4AF37)](https://github.com/dosteeve2-hash/forge-afrika)
@@ -14,11 +14,11 @@
 
 ## 🎯 Problème résolu
 
-Les coopératives agricoles (coton, sésame, karité) gèrent encore leurs membres, stocks et transactions sur papier. Sans connectivité fiable, aucun outil SaaS existant ne fonctionne sur le terrain.
+Les coopératives et exploitations agricoles gèrent encore leurs membres, stocks et transactions sur papier. Sans connectivité fiable, aucun outil SaaS existant ne fonctionne sur le terrain.
 
 ## 💡 Solution
 
-AgroTrack BF est une PWA offline-first qui permet aux coopératives de :
+AgroTrack est une PWA offline-first qui permet aux coopératives de :
 - Enregistrer les membres et leurs parcelles
 - Suivre les collectes et peser les récoltes
 - Gérer les paiements aux producteurs
@@ -26,7 +26,7 @@ AgroTrack BF est une PWA offline-first qui permet aux coopératives de :
 
 ## 🎯 Cible
 
-Coopératives coton et sésame, Burkina Faso — 2 000+ coopératives non digitalisées.
+Coopératives et exploitations agricoles, quel que soit le pays : le premier marché n'est pas encore choisi, l'outil s'adapte (pays, devise, cultures libres).
 
 ## 🖥️ Fonctionnalités prévues
 
@@ -49,7 +49,7 @@ Coopératives coton et sésame, Burkina Faso — 2 000+ coopératives non digita
 
 ## 🌍 Écosystème FORGE Afrika
 
-AgroTrack BF fait partie de [FORGE Afrika](https://github.com/dosteeve2-hash/forge-afrika) — l'infrastructure logicielle de l'industrialisation ouest-africaine.
+AgroTrack fait partie de [FORGE Afrika](https://github.com/dosteeve2-hash/forge-afrika) — l'infrastructure logicielle de l'industrialisation ouest-africaine.
 
 **Produits liés :**
 - [TAAMA](https://github.com/dosteeve2-hash/taama) — ERP PMEs transformation

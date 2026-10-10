@@ -1,11 +1,11 @@
-# AgroTrack BF — Instructions Claude
+# AgroTrack — Instructions Claude
 
 ## Stack
 - Next.js 15 App Router + TypeScript strict (0 `any`)
 - Supabase SSR : TOUJOURS `getUser()`, JAMAIS `getSession()`
 - Framer Motion : `type: 'spring' as const`
 - Charte : Navy #0A1628, Gold #D4AF37, Cyan #00BCD4
-- Montants FCFA : `new Intl.NumberFormat('fr-FR').format(n) + ' FCFA'`
+- Montants : `formatMontant(montant, devise, locale)` de `lib/format.ts` (Intl.NumberFormat, fr-FR par défaut) ; la devise vient des paramètres du compte, jamais de « FCFA » écrit en dur. Une seule devise par compte, sans conversion
 - Recharts : pattern `const [mounted, setMounted] = useState(false); useEffect(() => setMounted(true), []); if (!mounted) return null`
 
 ## Règles obligatoires
@@ -17,7 +17,7 @@
 - LAUNCH_CHECKLIST.md à valider avant déploiement prod
 
 ## Contexte produit
-PWA offline-first pour coopératives agricoles BF. Priorité : fonctionner sans internet.
+PWA offline-first pour coopératives agricoles, indépendante du pays (pays, devise et cultures choisis par le compte). Priorité : fonctionner sans internet.
 
 ---
 

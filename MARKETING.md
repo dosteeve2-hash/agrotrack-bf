@@ -1,4 +1,4 @@
-# AgroTrack BF — La Coopérative Agricole Numérique
+# AgroTrack — La Coopérative Agricole Numérique
 
 ## 🌾 "Vos membres, vos récoltes, vos données — enfin organisés."
 
@@ -17,13 +17,13 @@ et des conversations WhatsApp impossibles à retrouver.
 **Quand un bailleur demande vos données de production, vous transpirez.**
 **Quand un acheteur veut tracer l'origine, vous ne pouvez pas répondre.**
 
-AgroTrack BF résout ça.
+AgroTrack résout ça.
 
 ---
 
-## AgroTrack BF : Le Système de Gestion des Coopératives
+## AgroTrack : Le Système de Gestion des Coopératives
 
-AgroTrack BF est une **application PWA offline-first** qui permet aux coopératives
+AgroTrack est une **application PWA offline-first** qui permet aux coopératives
 agricoles du Burkina Faso — et d'Afrique de l'Ouest — de numériser leur gestion
 sans dépendre d'une connexion internet permanente.
 
@@ -32,7 +32,7 @@ sans dépendre d'une connexion internet permanente.
 
 ---
 
-## Ce Que AgroTrack BF Change
+## Ce Que AgroTrack Change
 
 ### 👨‍🌾 Gestion des Membres Simplifiée
 Fichier complet de chaque membre : coordonnées, superficie, cultures, historique.
@@ -65,7 +65,7 @@ Accès par rôles : le directeur voit tout, l'agent de terrain saisit ses villag
 
 ---
 
-## Pour Qui est AgroTrack BF ?
+## Pour Qui est AgroTrack ?
 
 ✅ Coopératives coton, maïs, sésame, karité, anacarde, niébé
 ✅ Unions de producteurs et fédérations
@@ -92,4 +92,4 @@ Formation de vos équipes incluse.
 
 **📲 [agrotrack-bf.vercel.app](https://agrotrack-bf.vercel.app)**
 
-*AgroTrack BF by FORGE Afrika — La data au service de l'agriculture africaine.*
+*AgroTrack by FORGE Afrika — La data au service de l'agriculture africaine.*

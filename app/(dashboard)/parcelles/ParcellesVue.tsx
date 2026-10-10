@@ -6,10 +6,11 @@ import {
   BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts'
-import type { Culture, StatutParcelle, TypeSol } from '@/lib/database.types'
-import {
-  LIBELLE_CULTURE, LIBELLE_STATUT_PARCELLE, LIBELLE_TYPE_SOL,
-} from '@/lib/database.types'
+import type { StatutParcelle } from '@/lib/database.types'
+import { LIBELLE_STATUT_PARCELLE } from '@/lib/database.types'
+import ChampListeLibre from '@/components/compte/ChampListeLibre'
+import EtatVide from '@/components/EtatVide'
+import { CULTURES_SUGGEREES, SOLS_SUGGERES, libelleCulture, libelleSol } from '@/lib/cultures'
 import type { ParcelleVue } from '@/lib/data/parcelles.model'
 import { rendementMoyen } from '@/lib/data/parcelles.model'
 import { creerParcelle } from './actions'
@@ -17,12 +18,6 @@ import { creerParcelle } from './actions'
 type Parcelle = ParcelleVue
 
 const STATUTS: readonly StatutParcelle[] = ['active', 'en_repos', 'en_preparation', 'recoltee']
-
-const CULTURES_SAISISSABLES: readonly Culture[] =
-  ['mais', 'sorgho', 'mil', 'coton', 'sesame', 'niebe', 'arachide', 'karite']
-
-const SOLS_SAISISSABLES: readonly TypeSol[] =
-  ['lateritique', 'argilo_sableux', 'sablonneux', 'limoneux']
 
 function sStyle(s: StatutParcelle | 'Tous') {
   const m: Record<string, { bg: string; color: string }> = {
@@ -46,7 +41,7 @@ const PIE_COLORS: Record<string, string> = {
 function buildBarData(ps: Parcelle[]) {
   const m: Record<string, { total:number; n:number }> = {}
   for (const p of ps) {
-    const cle = LIBELLE_CULTURE[p.culture]
+    const cle = libelleCulture(p.culture)
     if (!m[cle]) m[cle] = { total:0, n:0 }
     m[cle].total += p.rendementEstime
     m[cle].n += 1
@@ -84,8 +79,8 @@ function DetailModal({ p, onClose }: { p:Parcelle; onClose:()=>void }) {
         <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:16 }}>
           {([
             ['Producteur',p.membreNom],['Village',p.village],
-            ['Superficie',`${p.superficie} ha`],['Culture',LIBELLE_CULTURE[p.culture]],
-            ['Type de sol',p.typeSol ? LIBELLE_TYPE_SOL[p.typeSol] : '—'],
+            ['Superficie',`${p.superficie} ha`],['Culture',libelleCulture(p.culture)],
+            ['Type de sol',p.typeSol ? libelleSol(p.typeSol) : '—'],
             ['Plantation',p.datePlantation ?? '—'],['Récolte estimée',p.dateRecolteEstimee ?? '—'],
             ['Rendement estimé',`${p.rendementEstime} kg/ha`],['Irrigation',p.irrigation?'✓ Oui':'✗ Non'],
           ] as [string,string][]).map(([k,v])=>(
@@ -112,7 +107,7 @@ function NewModal({ membres, onClose, onCree }: {
   onCree: () => void
 }) {
   const [f, setF] = useState({ nom:'',superficie:'',membreId:membres[0]?.id ?? '',
-    typeSol:'lateritique' as TypeSol, culture:'mais' as Culture,
+    typeSol:'', culture:'',
     datePlantation:'',dateRecolteEstimee:'',
     statut:'active' as StatutParcelle,rendementEstime:'',irrigation:false,notes:'' })
   const [erreur, setErreur] = useState<string | null>(null)
@@ -122,7 +117,7 @@ function NewModal({ membres, onClose, onCree }: {
     borderRadius:8,color:'white',padding:'8px 12px',fontSize:13,width:'100%',outline:'none',boxSizing:'border-box' }
   const lbl: React.CSSProperties = { fontSize:11,color:'rgba(255,255,255,0.5)',marginBottom:4,display:'block' }
   function submit() {
-    if (!f.nom || !f.superficie) return
+    if (!f.nom || !f.superficie || !f.culture.trim()) return
     setErreur(null)
     const donnees = new FormData()
     donnees.set('nom', f.nom)
@@ -163,14 +158,12 @@ function NewModal({ membres, onClose, onCree }: {
             <select value={f.membreId} onChange={e=>upd('membreId',e.target.value)} style={{ ...inp }}>
               {membres.map(m=><option key={m.id} value={m.id}>{m.nom} — {m.village}</option>)}
             </select></div>
-          <div><label style={lbl}>Culture</label>
-            <select value={f.culture} onChange={e=>upd('culture',e.target.value as Culture)} style={{ ...inp }}>
-              {CULTURES_SAISISSABLES.map(c=><option key={c} value={c}>{LIBELLE_CULTURE[c]}</option>)}
-            </select></div>
-          <div><label style={lbl}>Type de sol</label>
-            <select value={f.typeSol} onChange={e=>upd('typeSol',e.target.value as TypeSol)} style={{ ...inp }}>
-              {SOLS_SAISISSABLES.map(t=><option key={t} value={t}>{LIBELLE_TYPE_SOL[t]}</option>)}
-            </select></div>
+          <ChampListeLibre label="Culture *" valeur={f.culture} onChange={v=>upd('culture',v)}
+            suggestions={CULTURES_SUGGEREES} placeholderVide="Choisir une culture"
+            labelStyle={lbl} style={{ ...inp }} />
+          <ChampListeLibre label="Type de sol" valeur={f.typeSol} onChange={v=>upd('typeSol',v)}
+            suggestions={SOLS_SUGGERES} placeholderVide="Non précisé"
+            labelStyle={lbl} style={{ ...inp }} />
           <div><label style={lbl}>Statut</label>
             <select value={f.statut} onChange={e=>upd('statut',e.target.value as StatutParcelle)} style={{ ...inp }}>
               {STATUTS.map(s=><option key={s} value={s}>{LIBELLE_STATUT_PARCELLE[s]}</option>)}
@@ -236,7 +229,7 @@ export function ParcellesVue({ parcelles, membres }: {
     return (p.nom.toLowerCase().includes(q)
         || p.village.toLowerCase().includes(q)
         || p.membreNom.toLowerCase().includes(q)
-        || LIBELLE_CULTURE[p.culture].toLowerCase().includes(q))
+        || libelleCulture(p.culture).toLowerCase().includes(q))
       && (filterStatut==='Tous'||p.statut===filterStatut)
   })
 
@@ -249,7 +242,7 @@ export function ParcellesVue({ parcelles, membres }: {
       <div style={{ display:'flex',justifyContent:'space-between',alignItems:'start',marginBottom:24 }}>
         <div>
           <h1 style={{ fontSize:22,fontWeight:800,color:'white',marginBottom:4 }}>Parcelles agricoles</h1>
-          <p style={{ fontSize:13,color:'rgba(255,255,255,0.5)' }}>{parcelles.length} parcelles · Saison 2026</p>
+          <p style={{ fontSize:13,color:'rgba(255,255,255,0.65)' }}>{parcelles.length} parcelle{parcelles.length>1?'s':''}</p>
         </div>
         <button onClick={()=>setShowNew(true)}
           style={{ display:'flex',alignItems:'center',gap:6,padding:'9px 16px',borderRadius:8,background:'#D4AF37',color:'#0A1628',border:'none',cursor:'pointer',fontSize:13,fontWeight:700 }}>
@@ -257,6 +250,16 @@ export function ParcellesVue({ parcelles, membres }: {
         </button>
       </div>
 
+      {parcelles.length === 0 ? (
+        <EtatVide sombre
+          titre="Aucune parcelle : ajoutez la première"
+          texte={membres.length === 0
+            ? 'Une parcelle appartient à un membre : ajoutez d’abord un membre.'
+            : 'Renseignez le producteur, la culture et la superficie.'}
+          action={membres.length === 0
+            ? { libelle: 'Ajouter un membre', href: '/membres' }
+            : { libelle: 'Nouvelle parcelle', onClick: () => setShowNew(true) }} />
+      ) : <>
       {/* KPIs */}
       <div style={{ display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:14,marginBottom:24 }}>
         {kpis.map(k=>(
@@ -337,7 +340,7 @@ export function ParcellesVue({ parcelles, membres }: {
             <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:6 }}>
               <div style={{ background:'rgba(255,255,255,0.04)',borderRadius:6,padding:'6px 9px' }}>
                 <p style={{ fontSize:9,color:'rgba(255,255,255,0.38)',marginBottom:2 }}>Culture</p>
-                <p style={{ fontSize:12,fontWeight:600,color:'#00D4FF' }}>{LIBELLE_CULTURE[p.culture]}</p>
+                <p style={{ fontSize:12,fontWeight:600,color:'#00D4FF' }}>{libelleCulture(p.culture)}</p>
               </div>
               <div style={{ background:'rgba(255,255,255,0.04)',borderRadius:6,padding:'6px 9px' }}>
                 <p style={{ fontSize:9,color:'rgba(255,255,255,0.38)',marginBottom:2 }}>Superficie</p>
@@ -354,6 +357,8 @@ export function ParcellesVue({ parcelles, membres }: {
           </div>
         ))}
       </div>
+
+      </>}
 
       {selected&&<DetailModal p={selected} onClose={()=>setSelected(null)}/>}
       {showNew&&<NewModal membres={membres} onClose={()=>setShowNew(false)} onCree={()=>setShowNew(false)}/>}

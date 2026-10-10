@@ -1,11 +1,12 @@
-# Base de données AgroTrack BF
+# Base de données AgroTrack
 
 ## Ce que contient ce dossier
 
 | Fichier | Rôle |
 |---|---|
 | `migrations/20260907120000_noyau.sql` | Le schéma : coopératives, profils, membres, parcelles, collectes, paiements, et la RLS |
-| `seed.sql` | Douze producteurs de démonstration, pour une base de développement |
+| `migrations/20261010120000_pays_devise_cultures.sql` | Pays, devise et coordonnées du compte ; cultures, types de sol et moyens de paiement en texte libre ; procédure documentée pour migrer les colonnes `*_fcfa` |
+| `seed.sql` | Une coopérative de développement **vide** (aucune donnée d'exemple) |
 
 ## ⚠️ Rien de tout ceci n'a été appliqué
 
@@ -26,10 +27,13 @@ vide qui ressemble à une coopérative sans membres.
 # 2. Le schéma
 psql "$DATABASE_URL" -f supabase/migrations/20260907120000_noyau.sql
 
-# 3. Les données de démonstration — développement uniquement
+# 3. Le pays, la devise et les cultures libres
+psql "$DATABASE_URL" -f supabase/migrations/20261010120000_pays_devise_cultures.sql
+
+# 4. Une coopérative vide — développement uniquement
 psql "$DATABASE_URL" -f supabase/seed.sql
 
-# 4. Rattacher ton compte à la coopérative de démonstration
+# 5. Rattacher ton compte à la coopérative de développement
 #    (crée d'abord un compte via /auth/register)
 psql "$DATABASE_URL" -c "update public.profils
   set cooperative_id = '11111111-1111-4111-8111-111111111111', role = 'gerant'
@@ -41,7 +45,9 @@ il passe via `psql` avec l'URL de connexion directe, pas via la clé anonyme.
 
 ## Les trois décisions qui structurent le schéma
 
-**1. Le FCFA est un entier.** `prix_unitaire_fcfa`, `montant_fcfa` : `integer`,
+**1. Les montants sont des entiers dans le schéma historique.** (Une seule devise par
+compte, sans conversion : voir la migration `20261010120000`, qui documente le passage à
+des colonnes `montant` sans suffixe `_fcfa`.) Historiquement : `prix_unitaire_fcfa`, `montant_fcfa` : `integer`,
 jamais `numeric(_, 2)`. Le XOF n'a pas de sous-unité — arrondir un paiement à
 deux décimales n'est pas de la précision, c'est un bug qui attend son heure.
 Les hectares, eux, gardent leurs décimales : ce sont des surfaces, pas de

@@ -10,7 +10,7 @@ interface ErrorProps {
 
 export default function DashboardError({ error, reset }: ErrorProps) {
   useEffect(() => {
-    console.error('[AgroTrack BF] Dashboard error:', error);
+    console.error('[AgroTrack] Dashboard error:', error);
   }, [error]);
 
   return (

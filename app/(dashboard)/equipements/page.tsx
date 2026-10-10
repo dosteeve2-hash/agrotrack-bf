@@ -4,6 +4,8 @@ import { useState, useMemo } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import { toast } from 'sonner'
 import { Wrench, CheckCircle, AlertTriangle, XCircle, Search, Plus, Eye, X, Package2 } from 'lucide-react'
+import EtatVide from '@/components/EtatVide'
+import { useFormatMontant } from '@/lib/compte/useParametresCompte'
 
 /* ── Types ───────────────────────────────────────────────────────────────── */
 type EtatEquip = 'Operationnel' | 'En maintenance' | 'Hors service' | 'En location'
@@ -19,80 +21,14 @@ interface Equipement {
   affecteA?: string
   derniereMaintenance: string
   prochaineMaintenance: string
-  coutLocation?: number  // FCFA/jour
+  coutLocation?: number  // par jour, dans la devise du compte
   usure: number          // % 0-100
   notes?: string
 }
 
-/* ── Mock data ───────────────────────────────────────────────────────────── */
-const EQUIPEMENTS: Equipement[] = [
-  {
-    id:'E01', nom:'Tracteur SAME Dorado 70', categorie:'Tracteur', marque:'SAME', annee:2021,
-    etat:'Operationnel', affecteA:'Secteur Nord — Ouahigouya',
-    derniereMaintenance:'2026-07-15', prochaineMaintenance:'2026-10-15',
-    coutLocation:45_000, usure:38,
-    notes:'Revision moteur faite. Pneus avant a surveiller.',
-  },
-  {
-    id:'E02', nom:'Tracteur John Deere 5075E', categorie:'Tracteur', marque:'John Deere', annee:2019,
-    etat:'En maintenance', affecteA:'Atelier Bobo-Dioulasso',
-    derniereMaintenance:'2026-08-01', prochaineMaintenance:'2026-08-20',
-    coutLocation:55_000, usure:62,
-    notes:'Courroie de distribution remplacee. Attente piece filtre hydraulique.',
-  },
-  {
-    id:'E03', nom:'Motopompe Honda WB30', categorie:'Irrigation', marque:'Honda', annee:2023,
-    etat:'Operationnel', affecteA:'Parcelle MP-042 — Manga',
-    derniereMaintenance:'2026-06-10', prochaineMaintenance:'2026-09-10',
-    coutLocation:8_000, usure:22,
-  },
-  {
-    id:'E04', nom:'Motopompe Kirloskar 3HP', categorie:'Irrigation', marque:'Kirloskar', annee:2020,
-    etat:'En location', affecteA:'Membre: Boukaré Ouedraogo',
-    derniereMaintenance:'2026-05-20', prochaineMaintenance:'2026-08-20',
-    coutLocation:6_500, usure:55,
-    notes:'Louee 30 jours — retour prevu le 20 aout 2026.',
-  },
-  {
-    id:'E05', nom:'Moissonneuse-batteuse Claas Crop Tiger', categorie:'Recolte', marque:'Claas', annee:2018,
-    etat:'Hors service', affecteA:undefined,
-    derniereMaintenance:'2026-04-01', prochaineMaintenance:'2026-09-01',
-    coutLocation:90_000, usure:78,
-    notes:'Courroie principale cassee. Devis reparation en cours — AGROTEC Ouaga.',
-  },
-  {
-    id:'E06', nom:'Pulverisateur trainé 800L', categorie:'Outillage', marque:'Tecnoma', annee:2022,
-    etat:'Operationnel', affecteA:'Secteur Centre',
-    derniereMaintenance:'2026-07-01', prochaineMaintenance:'2026-10-01',
-    coutLocation:12_000, usure:30,
-  },
-  {
-    id:'E07', nom:'Camion benne Mitsubishi Canter 7T', categorie:'Transport', marque:'Mitsubishi', annee:2020,
-    etat:'Operationnel', affecteA:'Transport recoltes — tournee',
-    derniereMaintenance:'2026-07-28', prochaineMaintenance:'2026-10-28',
-    coutLocation:35_000, usure:45,
-    notes:'Vidange et filtres faits. Pneus neufs juillet 2026.',
-  },
-  {
-    id:'E08', nom:'Charrue a disques (4 corps)', categorie:'Outillage', marque:'Huard', annee:2021,
-    etat:'Operationnel', affecteA:'Tracteur SAME Dorado 70',
-    derniereMaintenance:'2026-03-15', prochaineMaintenance:'2026-09-15',
-    usure:25,
-  },
-  {
-    id:'E09', nom:'Semoir mecanique 4 rangs', categorie:'Outillage', marque:'Nodet', annee:2022,
-    etat:'En location', affecteA:'Membre: Aminata Sawadogo',
-    derniereMaintenance:'2026-04-20', prochaineMaintenance:'2026-10-20',
-    coutLocation:5_000, usure:18,
-    notes:'Semis sorgho saison hivernage.',
-  },
-  {
-    id:'E10', nom:'Groupe electrogene 15KVA', categorie:'Outillage', marque:'Sdmo', annee:2023,
-    etat:'Operationnel', affecteA:'Hangar stockage principal',
-    derniereMaintenance:'2026-06-15', prochaineMaintenance:'2026-09-15',
-    coutLocation:15_000, usure:20,
-  },
-]
+/* ── Données ─────────────────────────────────────────────────────────────── */
+// Aucune donnée d'exemple : les équipements viendront de la base quand ce module y sera raccordé.
+const EQUIPEMENTS: Equipement[] = []
 
 /* ── Helpers ─────────────────────────────────────────────────────────────── */
 function etatColor(e: EtatEquip) {
@@ -150,6 +86,7 @@ function KpiCard({ label, value, sub, color, icon: Icon }:
 }
 
 function ModalEquip({ eq, onClose }: { eq: Equipement; onClose: () => void }) {
+  const fmt = useFormatMontant()
   return (
     <div style={{ position:'fixed', inset:0, zIndex:60, display:'flex', alignItems:'center', justifyContent:'center' }}>
       <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.7)' }} onClick={onClose} />
@@ -201,7 +138,7 @@ function ModalEquip({ eq, onClose }: { eq: Equipement; onClose: () => void }) {
             borderRadius:10, padding:'10px 14px', marginBottom:16, textAlign:'center' as const }}>
             <div style={{ fontSize:11, color:'rgba(255,255,255,0.4)' }}>Tarif location</div>
             <div style={{ fontSize:20, fontWeight:800, color:'#D4AF37', fontFamily:'monospace' }}>
-              {eq.coutLocation.toLocaleString('fr-FR')} FCFA/jour
+              {fmt(eq.coutLocation)}/jour
             </div>
           </div>
         )}
@@ -241,6 +178,7 @@ export default function EquipementsPage() {
   const [filterEtat, setFilterEtat] = useState('Tous')
   const [filterCat,  setFilterCat]  = useState('Toutes')
   const [selected,   setSelected]   = useState<Equipement | null>(null)
+  const fmt = useFormatMontant()
 
   const ETATS = ['Tous','Operationnel','En maintenance','En location','Hors service']
   const CATS  = ['Toutes','Tracteur','Irrigation','Recolte','Transport','Outillage']
@@ -274,6 +212,18 @@ export default function EquipementsPage() {
     borderRadius:7, padding:'4px 11px', fontSize:11, cursor:'pointer', fontWeight:a?700:400,
   })
 
+  if (EQUIPEMENTS.length === 0) {
+    return (
+      <div className="p-8" style={{ maxWidth:1200 }}>
+        <h1 style={{ fontSize:22, fontWeight:700, color:'#111827', margin:0 }}>Équipements agricoles</h1>
+        <p style={{ fontSize:13, color:'#4b5563', margin:'4px 0 24px' }}>Matériel, maintenance et location</p>
+        <EtatVide
+          titre="Aucun équipement : ajoutez le premier"
+          texte="Votre matériel, son état et ses maintenances apparaîtront ici. L’ajout d’équipements n’est pas encore raccordé à la base dans cette version." />
+      </div>
+    )
+  }
+
   return (
     <div className="p-8" style={{ display:'flex', flexDirection:'column' as const, gap:24, maxWidth:1200 }}>
       {/* Header */}
@@ -281,7 +231,7 @@ export default function EquipementsPage() {
         <div>
           <h1 style={{ fontSize:22, fontWeight:700, color:'#f0f4ff', margin:0 }}>Equipements agricoles</h1>
           <p style={{ fontSize:13, color:'rgba(255,255,255,0.5)', margin:'4px 0 0' }}>
-            {EQUIPEMENTS.length} equipements · Cooperative AgroTrack BF
+            {EQUIPEMENTS.length} équipement{EQUIPEMENTS.length > 1 ? 's' : ''}
           </p>
         </div>
         <button onClick={() => toast.success('Ajout equipement — bientot disponible')}
@@ -403,7 +353,7 @@ export default function EquipementsPage() {
           fontSize:11, color:'rgba(255,255,255,0.3)', display:'flex', justifyContent:'space-between' }}>
           <span>{filtered.length} equipement{filtered.length!==1?'s':''} affiche{filtered.length!==1?'s':''}</span>
           <span style={{ color:'#D4AF37', fontWeight:600 }}>
-            Location: {EQUIPEMENTS.filter(e=>e.coutLocation).reduce((s,e)=>s+(e.coutLocation??0),0).toLocaleString('fr-FR')} FCFA/j potentiel
+            Location: {fmt(EQUIPEMENTS.filter(e=>e.coutLocation).reduce((s,e)=>s+(e.coutLocation??0),0))}/j potentiel
           </span>
         </div>
       </div>

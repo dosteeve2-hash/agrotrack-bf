@@ -111,7 +111,7 @@ export default function DashboardNav({ userEmail, logoutAction }: {
           <Menu className="w-5 h-5" />
         </button>
         <Leaf className="w-5 h-5 flex-shrink-0" style={{ color: '#D4AF37' }} />
-        <span className="text-white font-bold text-base">AgroTrack BF</span>
+        <span className="text-white font-bold text-base">AgroTrack</span>
       </header>
 
       {/* Voile — ferme le tiroir au toucher */}
@@ -128,7 +128,7 @@ export default function DashboardNav({ userEmail, logoutAction }: {
         style={{ background: '#0A1628' }}>
         <div className="flex items-center gap-2 px-5 py-5 border-b border-white/10">
           <Leaf className="w-6 h-6 flex-shrink-0" style={{ color: '#D4AF37' }} />
-          <span className="text-white font-bold text-base">AgroTrack BF</span>
+          <span className="text-white font-bold text-base">AgroTrack</span>
           <button type="button" onClick={() => setOuvert(false)} aria-label="Fermer le menu"
             className="md:hidden ml-auto p-2 -mr-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all">
             <X className="w-5 h-5" />

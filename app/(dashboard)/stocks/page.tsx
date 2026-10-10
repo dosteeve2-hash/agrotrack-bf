@@ -5,13 +5,13 @@ import { Package2, AlertTriangle, Warehouse, TrendingDown, X, Plus, Eye } from '
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts'
+import EtatVide from '@/components/EtatVide'
+import { useFormatMontant } from '@/lib/compte/useParametresCompte'
+import { libelleCulture } from '@/lib/cultures'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 type Alerte = 'Normal' | 'Faible' | 'Critique'
-type Produit =
-  | 'Coton grade A' | 'Coton grade B' | 'Sesame blanc'
-  | 'Karite brut'   | 'Mais grain sec' | 'Arachide'
-  | 'Sorgho'        | 'Niebe'          | 'Fonio'
+type Produit = string
 
 // ─── Data ──────────────────────────────────────────────────────────────────
 interface Stock {
@@ -20,29 +20,19 @@ interface Stock {
   dateEntree: string; alerte: Alerte; lot: string
 }
 
-const STOCKS: Stock[] = [
-  { id: '1', produit: 'Coton grade A',  quantite: 28500, seuil: 5000,  unite: 'kg', entrepot: 'Koudougou central',   valeur: 8242500,  dateEntree: '2026-07-10', alerte: 'Normal',   lot: 'LOT-2026-CGA-01' },
-  { id: '2', produit: 'Sesame blanc',   quantite: 4200,  seuil: 2000,  unite: 'kg', entrepot: 'Koudougou central',   valeur: 1890000,  dateEntree: '2026-07-11', alerte: 'Normal',   lot: 'LOT-2026-SES-01' },
-  { id: '3', produit: 'Karite brut',    quantite: 380,   seuil: 1000,  unite: 'kg', entrepot: 'Entrepot Dedougou',   valeur: 144400,   dateEntree: '2026-07-08', alerte: 'Critique', lot: 'LOT-2026-KAR-03' },
-  { id: '4', produit: 'Mais grain sec', quantite: 12000, seuil: 3000,  unite: 'kg', entrepot: 'Entrepot Bobo',       valeur: 1740000,  dateEntree: '2026-07-09', alerte: 'Normal',   lot: 'LOT-2026-MAI-02' },
-  { id: '5', produit: 'Arachide',       quantite: 1850,  seuil: 2000,  unite: 'kg', entrepot: 'Entrepot Dedougou',   valeur: 833000,   dateEntree: '2026-07-15', alerte: 'Faible',   lot: 'LOT-2026-ARA-01' },
-  { id: '6', produit: 'Coton grade B',  quantite: 15200, seuil: 5000,  unite: 'kg', entrepot: 'Entrepot Bobo',       valeur: 3344000,  dateEntree: '2026-07-12', alerte: 'Normal',   lot: 'LOT-2026-CGB-01' },
-  { id: '7', produit: 'Sorgho',         quantite: 6800,  seuil: 2000,  unite: 'kg', entrepot: 'Koudougou central',   valeur: 816000,   dateEntree: '2026-07-20', alerte: 'Normal',   lot: 'LOT-2026-SOR-01' },
-  { id: '8', produit: 'Niebe',          quantite: 920,   seuil: 1500,  unite: 'kg', entrepot: 'Entrepot Dedougou',   valeur: 552000,   dateEntree: '2026-07-22', alerte: 'Faible',   lot: 'LOT-2026-NIE-01' },
-  { id: '9', produit: 'Fonio',          quantite: 2100,  seuil: 500,   unite: 'kg', entrepot: 'Entrepot Bobo',       valeur: 945000,   dateEntree: '2026-07-18', alerte: 'Normal',   lot: 'LOT-2026-FON-01' },
-]
+// Aucune donnée d'exemple : les stocks viendront de la base quand ce module y sera raccordé.
+const STOCKS: Stock[] = []
 
 const CHART_DATA = STOCKS.map(s => ({
-  name: s.produit.length > 12 ? s.produit.slice(0, 12) + '…' : s.produit,
+  name: libelleCulture(s.produit).length > 12 ? libelleCulture(s.produit).slice(0, 12) + '…' : libelleCulture(s.produit),
   quantite: s.quantite,
   color: s.alerte === 'Critique' ? '#ef4444' : s.alerte === 'Faible' ? '#D4AF37' : '#00D4FF',
 }))
 
-const ENTREPOTS = ['Tous', 'Koudougou central', 'Entrepot Dedougou', 'Entrepot Bobo']
+const ENTREPOTS = ['Tous', ...new Set(STOCKS.map(s => s.entrepot))]
 const ALERTES_FILTER: Alerte[] = ['Normal', 'Faible', 'Critique']
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
-const fmtFCFA = (n: number) => new Intl.NumberFormat('fr-FR').format(n) + ' FCFA'
 const fmtQty  = (n: number, u: string) => new Intl.NumberFormat('fr-FR').format(n) + ' ' + u
 
 const ALERTE_CFG = {
@@ -60,6 +50,7 @@ export default function StocksPage() {
   const [entrepot, setEntrepot] = useState('Tous')
   const [alerteFilter, setAlerteFilter] = useState<Alerte | 'Tous'>('Tous')
   const [selected, setSelected] = useState<Stock | null>(null)
+  const fmt = useFormatMontant()
 
   const filtered = STOCKS.filter(s =>
     (entrepot === 'Tous'      || s.entrepot === entrepot) &&
@@ -71,6 +62,18 @@ export default function StocksPage() {
   const nbCritique  = STOCKS.filter(s => s.alerte === 'Critique').length
   const nbFaible    = STOCKS.filter(s => s.alerte === 'Faible').length
 
+  if (STOCKS.length === 0) {
+    return (
+      <div style={{ padding: '1.5rem', color: 'white', background: '#0A1628', minHeight: '100vh' }}>
+        <h1 style={{ color: '#f0f4ff', fontWeight: 800, fontSize: '1.5rem', margin: '0 0 0.25rem' }}>Stocks</h1>
+        <p style={{ color: '#a9b6d0', fontSize: '0.85rem', margin: '0 0 1.5rem' }}>Produits et entrepôts</p>
+        <EtatVide sombre
+          titre="Aucun stock : enregistrez la première entrée"
+          texte="Vos produits stockés, leurs seuils d’alerte et leur valeur apparaîtront ici. La saisie des stocks n’est pas encore raccordée à la base dans cette version." />
+      </div>
+    )
+  }
+
   return (
     <div style={{ padding: '1.5rem', color: 'white', background: '#0A1628', minHeight: '100vh' }}>
 
@@ -81,7 +84,7 @@ export default function StocksPage() {
             <Package2 style={{ display: 'inline', width: 20, height: 20, marginRight: 8, color: '#00D4FF', verticalAlign: 'middle' }} />
             Stocks
           </h1>
-          <p style={{ color: '#8899bb', fontSize: '0.85rem', margin: 0 }}>9 produits · 3 entrepots · Aout 2026</p>
+          <p style={{ color: '#a9b6d0', fontSize: '0.85rem', margin: 0 }}>{STOCKS.length} produit{STOCKS.length > 1 ? 's' : ''} · {ENTREPOTS.length - 1} entrepôt{ENTREPOTS.length > 2 ? 's' : ''}</p>
         </div>
         <button style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#D4AF37', color: '#0A1628', border: 'none', borderRadius: 10, padding: '0.55rem 1rem', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}>
           <Plus style={{ width: 14, height: 14 }} /> Entree stock
@@ -91,7 +94,7 @@ export default function StocksPage() {
       {/* KPIs */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.85rem', marginBottom: '1.5rem' }}>
         {[
-          { label: 'Valeur totale',   value: fmtFCFA(totalValeur),          color: '#D4AF37', icon: Package2      },
+          { label: 'Valeur totale',   value: fmt(totalValeur),          color: '#D4AF37', icon: Package2      },
           { label: 'Quantite totale', value: `${new Intl.NumberFormat('fr-FR').format(totalQty)} kg`, color: '#00D4FF', icon: Warehouse },
           { label: 'Alertes faibles', value: `${nbFaible} produit${nbFaible !== 1 ? 's' : ''}`, color: '#D4AF37', icon: AlertTriangle },
           { label: 'Alertes critiques', value: `${nbCritique} produit${nbCritique !== 1 ? 's' : ''}`, color: '#ef4444', icon: TrendingDown },
@@ -168,7 +171,7 @@ export default function StocksPage() {
         <table style={{ width: '100%', minWidth: 720, borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ background: 'rgba(0,212,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-              {['Produit', 'Quantite', 'Seuil min', 'Entrepot', 'Valeur (FCFA)', 'Etat', 'Detail'].map(h => (
+              {['Produit', 'Quantite', 'Seuil min', 'Entrepot', 'Valeur', 'Etat', 'Detail'].map(h => (
                 <th key={h} style={{ padding: '0.75rem 1rem', textAlign: 'left', fontSize: '0.7rem', color: '#8899bb', fontWeight: 600 }}>{h}</th>
               ))}
             </tr>
@@ -187,7 +190,7 @@ export default function StocksPage() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <Package2 style={{ width: 14, height: 14, color: '#8899bb' }} />
                       <div>
-                        <p style={{ color: '#f0f4ff', fontWeight: 700, fontSize: '0.82rem', margin: 0 }}>{s.produit}</p>
+                        <p style={{ color: '#f0f4ff', fontWeight: 700, fontSize: '0.82rem', margin: 0 }}>{libelleCulture(s.produit)}</p>
                         <p style={{ color: '#5a6a85', fontSize: '0.68rem', margin: '2px 0 0' }}>{s.lot}</p>
                       </div>
                     </div>
@@ -202,7 +205,7 @@ export default function StocksPage() {
                   <td style={{ padding: '0.85rem 1rem', color: '#8899bb', fontSize: '0.8rem' }}>{fmtQty(s.seuil, s.unite)}</td>
                   <td style={{ padding: '0.85rem 1rem', color: '#8899bb', fontSize: '0.78rem' }}>{s.entrepot}</td>
                   <td style={{ padding: '0.85rem 1rem', color: '#f0f4ff', fontWeight: 700, fontSize: '0.82rem' }}>
-                    {new Intl.NumberFormat('fr-FR').format(s.valeur)}
+                    {fmt(s.valeur)}
                   </td>
                   <td style={{ padding: '0.85rem 1rem' }}>
                     <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: '0.7rem', fontWeight: 700, background: cfg.bg, color: cfg.color }}>
@@ -235,7 +238,7 @@ export default function StocksPage() {
             onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
               <div>
-                <h2 style={{ color: '#f0f4ff', fontWeight: 800, fontSize: '1.1rem', margin: '0 0 4px' }}>{selected.produit}</h2>
+                <h2 style={{ color: '#f0f4ff', fontWeight: 800, fontSize: '1.1rem', margin: '0 0 4px' }}>{libelleCulture(selected.produit)}</h2>
                 <p style={{ color: '#5a6a85', fontSize: '0.75rem', margin: 0 }}>{selected.lot}</p>
               </div>
               <button onClick={() => setSelected(null)} style={{ background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 8, padding: 6, cursor: 'pointer', color: '#8899bb' }}>
@@ -246,7 +249,7 @@ export default function StocksPage() {
             {[
               ['Quantite en stock',  fmtQty(selected.quantite, selected.unite)],
               ['Seuil minimum',      fmtQty(selected.seuil, selected.unite)],
-              ['Valeur estimee',     fmtFCFA(selected.valeur)],
+              ['Valeur estimee',     fmt(selected.valeur)],
               ['Entrepot',           selected.entrepot],
               ['Date entree',        selected.dateEntree],
               ['Etat',               ALERTE_CFG[selected.alerte].label],

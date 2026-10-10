@@ -3,8 +3,8 @@ import './globals.css'
 import ScrollToTop from '@/components/ScrollToTop'
 
 export const metadata: Metadata = {
-  title: 'AgroTrack BF — Gestion coopératives agricoles',
-  description: 'PWA offline-first pour coopératives agricoles du Burkina Faso',
+  title: 'AgroTrack — Suivi des récoltes et gestion agricole',
+  description: 'PWA offline-first pour suivre ses récoltes, de la parcelle au paiement, dans la devise de son pays',
   icons: {
     apple: '/apple-touch-icon.png',
     icon: '/android-chrome-192x192.png',
