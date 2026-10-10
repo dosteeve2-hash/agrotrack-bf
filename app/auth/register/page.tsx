@@ -59,9 +59,9 @@ export default async function RegisterPage({
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-4">
             <Leaf className="w-8 h-8" style={{ color: '#D4AF37' }} />
-            <span className="text-2xl font-bold text-white">AgroTrack BF</span>
+            <span className="text-2xl font-bold text-white">AgroTrack</span>
           </div>
-          <p className="text-white/50 text-sm">Créez votre compte coopérative</p>
+          <p className="text-white/50 text-sm">Créez votre compte</p>
         </div>
 
         {params.error && (
@@ -74,7 +74,7 @@ export default async function RegisterPage({
         <form action={registerAction} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-white/70 mb-1">Nom complet</label>
-            <input name="full_name" type="text" required placeholder="Ouédraogo Adama"
+            <input name="full_name" type="text" required placeholder="Prénom et nom"
               className="w-full px-4 py-3 rounded-lg text-white placeholder-white/30 text-sm focus:outline-none"
               style={{ background: '#112240', border: '1px solid rgba(255,255,255,0.1)' }} />
           </div>

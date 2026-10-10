@@ -1,7 +1,7 @@
-# PRD — AgroTrack BF
+# PRD — AgroTrack
 
 ## Résumé exécutif
-AgroTrack BF est une PWA (Progressive Web App) offline-first conçue pour les coopératives agricoles du Burkina Faso. Elle permet aux agents de terrain d'enregistrer les membres, les parcelles, les collectes et les paiements — même sans connexion internet. La synchronisation se fait automatiquement dès que le réseau revient. AgroTrack BF fait partie de l'écosystème FORGE Afrika et alimente ValueChain Connect (la marketplace B2B) avec les données de production des coopératives.
+AgroTrack est une PWA (Progressive Web App) offline-first conçue pour les coopératives agricoles du Burkina Faso. Elle permet aux agents de terrain d'enregistrer les membres, les parcelles, les collectes et les paiements — même sans connexion internet. La synchronisation se fait automatiquement dès que le réseau revient. AgroTrack fait partie de l'écosystème FORGE Afrika et alimente ValueChain Connect (la marketplace B2B) avec les données de production des coopératives.
 
 ## Motivation originale
 > "PWA offline-first pour coopératives agricoles BF. Priorité : fonctionner sans internet."
@@ -10,7 +10,7 @@ AgroTrack BF est une PWA (Progressive Web App) offline-first conçue pour les co
 Le Burkina Faso compte plus de 2 000 coopératives agricoles (coton, sésame, karité) qui gèrent encore leurs membres, stocks et transactions sur papier. Les zones rurales ont une couverture internet intermittente. Aucun outil SaaS existant ne fonctionne sur le terrain dans ces conditions.
 
 ## Vision et ambition
-Digitaliser les coopératives agricoles burkinabèses et ouest-africaines sans attendre que la connectivité soit universelle. AgroTrack BF doit fonctionner aussi bien que le carnet papier — mais avec la puissance de la donnée structurée, exportable et synchronisable. L'ambition est de couvrir 10% des coopératives formelles au Burkina Faso en Phase 2 (500 coopératives, 50 000+ membres enregistrés).
+Digitaliser les coopératives agricoles burkinabèses et ouest-africaines sans attendre que la connectivité soit universelle. AgroTrack doit fonctionner aussi bien que le carnet papier — mais avec la puissance de la donnée structurée, exportable et synchronisable. L'ambition est de couvrir 10% des coopératives formelles au Burkina Faso en Phase 2 (500 coopératives, 50 000+ membres enregistrés).
 
 ## Problème résolu
 1. **Gestion papier non fiable** — erreurs, perte de données, impossibilité d'agréger au niveau fédération.
@@ -59,14 +59,14 @@ UI          shadcn/ui + Framer Motion (spring animations)
 Charts      Recharts (pattern `mounted` pour SSR)
 Déploiement Vercel
 Charte      Navy #0A1628, Gold #D4AF37, Cyan #00BCD4
-Montants    Intl.NumberFormat('fr-FR') + ' FCFA'
+Montants    formatMontant(montant, devise) — Intl.NumberFormat, devise du compte
 ```
 
 ## Intégration écosystème FORGE Afrika
-- **AgroTrack BF → ValueChain Connect** : les coopératives peuvent lister leur production directement sur le marketplace B2B depuis AgroTrack BF
-- **AgroTrack BF → TAAMA** : les données de matière première collectée alimentent les ERP des transformateurs TAAMA
-- **AgroTrack BF → MillTrack** : les minoteries et huileries reçoivent les bons de livraison directement depuis AgroTrack BF
-- **AgroTrack BF → FORGE Afrika HQ** : métriques (tonnage collecté, coopératives actives) remontées au dashboard groupe
+- **AgroTrack → ValueChain Connect** : les coopératives peuvent lister leur production directement sur le marketplace B2B depuis AgroTrack
+- **AgroTrack → TAAMA** : les données de matière première collectée alimentent les ERP des transformateurs TAAMA
+- **AgroTrack → MillTrack** : les minoteries et huileries reçoivent les bons de livraison directement depuis AgroTrack
+- **AgroTrack → FORGE Afrika HQ** : métriques (tonnage collecté, coopératives actives) remontées au dashboard groupe
 
 ## Feuille de route
 ### Phase 1 — Gestion membres et parcelles

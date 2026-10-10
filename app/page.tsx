@@ -9,7 +9,7 @@ const features = [
   { icon: Package, title: 'Stocks & entrepôts', desc: "Inventaire temps réel avec alertes de stock faible" },
   { icon: BarChart2, title: 'Rapports & analytics', desc: "Graphiques collectes, CA mensuel et exports CSV" },
   { icon: Wifi, title: 'Offline-first', desc: "Fonctionne sans internet — sync automatique à la reconnexion" },
-  { icon: Shield, title: 'Paiements sécurisés', desc: "Mobile Money, espèces et virements en FCFA" },
+  { icon: Shield, title: 'Paiements sécurisés', desc: "Espèces, virement, mobile money ou autre, dans la devise de votre pays" },
 ]
 
 export default function LandingPage() {
@@ -18,7 +18,7 @@ export default function LandingPage() {
       <nav className="flex items-center justify-between px-6 py-4 border-b border-white/10">
         <div className="flex items-center gap-2">
           <Leaf className="w-7 h-7" style={{ color: '#D4AF37' }} />
-          <span className="text-xl font-bold text-white">AgroTrack BF</span>
+          <span className="text-xl font-bold text-white">AgroTrack</span>
         </div>
         <div className="flex gap-3">
           <Link href="/auth/login"
@@ -43,12 +43,12 @@ export default function LandingPage() {
             🌾 FORGE Afrika Ecosystem
           </div>
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
-            Gérez votre coopérative<br />
-            <span style={{ color: '#D4AF37' }}>agricole au Burkina</span>
+            Suivez vos récoltes<br />
+            <span style={{ color: '#D4AF37' }}>de la parcelle au paiement</span>
           </h1>
           <p className="text-lg text-white/60 mb-10 max-w-2xl mx-auto">
-            Plateforme PWA offline-first pour les coopératives agricoles du Burkina Faso.
-            Collectes, stocks, paiements — tout en FCFA, même sans internet.
+            Plateforme PWA offline-first pour les coopératives et les exploitations agricoles.
+            Membres, parcelles, collectes, stocks, paiements — dans la devise de votre pays, même sans internet.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth/login?demo=true"
@@ -81,7 +81,7 @@ export default function LandingPage() {
       </main>
 
       <footer className="text-center py-8 text-white/30 text-sm border-t border-white/10">
-        © 2026 AgroTrack BF — FORGE Afrika · Burkina Faso
+        © {new Date().getFullYear()} AgroTrack — FORGE Afrika
       </footer>
     </div>
   )

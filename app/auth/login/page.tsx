@@ -57,9 +57,9 @@ export default async function LoginPage({
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-4">
             <Leaf className="w-8 h-8" style={{ color: '#D4AF37' }} />
-            <span className="text-2xl font-bold text-white">AgroTrack BF</span>
+            <span className="text-2xl font-bold text-white">AgroTrack</span>
           </div>
-          <p className="text-white/50 text-sm">Connectez-vous à votre coopérative</p>
+          <p className="text-white/50 text-sm">Connectez-vous à votre compte</p>
         </div>
 
         {!configure && (
@@ -85,10 +85,9 @@ export default async function LoginPage({
           <p className="text-sm font-semibold mb-2" style={{ color: '#D4AF37' }}>
             🎯 Compte démo — accès immédiat
           </p>
-          <div className="text-xs text-white/60 space-y-0.5 mb-3">
-            <p>Email : <span className="text-white font-mono">demo@agrotrack-bf.com</span></p>
-            <p>Mot de passe : <span className="text-white font-mono">Demo2026!</span></p>
-          </div>
+          <p className="text-xs text-white/70 mb-3">
+            Compte de démonstration partagé : il ne contient aucune donnée d’exemple et rien n’y est conservé.
+          </p>
           <form action={demoLoginAction}>
             <button type="submit" disabled={!configure}
               className="w-full py-2 rounded-lg text-sm font-semibold transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"

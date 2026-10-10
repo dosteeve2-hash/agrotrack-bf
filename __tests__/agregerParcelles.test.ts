@@ -1,5 +1,5 @@
 /**
- * Suite de tests Vitest — agregation membre / parcelles (AgroTrack BF)
+ * Suite de tests Vitest — agregation membre / parcelles (AgroTrack)
  *
  * `agregerParcelles` est la seule logique metier de la page Membres qui ne
  * depende pas de la base : c'est elle qui transforme des lignes en ce que
@@ -13,7 +13,7 @@ type M = Pick<MembreRow, 'id' | 'nom' | 'telephone' | 'village' | 'statut' | 'da
 type P = Pick<ParcelleRow, 'membre_id' | 'culture' | 'surface_ha'>
 
 const membre = (id: string, nom = 'Ouédraogo Adama'): M => ({
-  id, nom, telephone: '+226 70 00 00 00', village: 'Koudougou',
+  id, nom, telephone: '+00 000 000', village: 'Village A',
   statut: 'actif', date_adhesion: '2023-03-15',
 })
 
@@ -88,7 +88,7 @@ describe('agregerParcelles', () => {
     expect(vue).toMatchObject({
       id: 'm1',
       nom: 'Kaboré Ibrahim',
-      village: 'Koudougou',
+      village: 'Village A',
       statut: 'actif',
       dateAdhesion: '2023-03-15',
     })
