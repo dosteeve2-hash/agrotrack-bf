@@ -119,11 +119,11 @@ export default function CalendrierPage() {
 
           {/* Navigation mois */}
           <div className="flex items-center justify-between mb-4">
-            <button onClick={() => navMonth(-1)} className="p-1.5 hover:bg-gray-100 rounded-lg">
+            <button onClick={() => navMonth(-1)} aria-label="Mois précédent" className="p-1.5 hover:bg-gray-100 rounded-lg">
               <ChevronLeft className="w-4 h-4 text-gray-600" />
             </button>
             <h2 className="text-base font-semibold text-gray-900">{MOIS[mo]} {yr}</h2>
-            <button onClick={() => navMonth(1)} className="p-1.5 hover:bg-gray-100 rounded-lg">
+            <button onClick={() => navMonth(1)} aria-label="Mois suivant" className="p-1.5 hover:bg-gray-100 rounded-lg">
               <ChevronRight className="w-4 h-4 text-gray-600" />
             </button>
           </div>

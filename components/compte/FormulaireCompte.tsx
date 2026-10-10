@@ -6,6 +6,7 @@ import ChoixPays from './ChoixPays'
 import { deviseProposee, nomDevise, nomPays, toutesLesDevises } from '@/lib/pays'
 import { coordonneesValides, enregistrerParametres } from '@/lib/compte/parametres'
 import { useParametresCompte } from '@/lib/compte/useParametresCompte'
+import { useHydrated } from '@/lib/useHydrated'
 
 function versNombre(texte: string): number | null {
   const t = texte.trim().replace(',', '.')
@@ -33,7 +34,8 @@ export default function FormulaireCompte({ onEnregistre }: { onEnregistre?: () =
   const deviseCourante = devise ?? actuel?.deviseCode ?? ''
   const latCourante = lat ?? (actuel?.latitude?.toString() ?? '')
   const lonCourante = lon ?? (actuel?.longitude?.toString() ?? '')
-  const devises = useMemo(() => toutesLesDevises(), [])
+  const monte = useHydrated()
+  const devises = useMemo(() => (monte ? toutesLesDevises() : []), [monte])
 
   function choisirPays(code: string) {
     setPays(code)

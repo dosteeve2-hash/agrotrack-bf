@@ -17,7 +17,7 @@ interface Props {
  */
 export default function EtatVide({ titre, texte, action, icone, sombre = false }: Props) {
   const couleurTitre = sombre ? 'rgba(255,255,255,0.9)' : '#111827'
-  const couleurTexte = sombre ? 'rgba(255,255,255,0.65)' : '#6b7280'
+  const couleurTexte = sombre ? 'rgba(255,255,255,0.7)' : '#4b5563'
   const styleBouton = { background: '#D4AF37', color: '#0A1628' }
   const classeBouton = 'inline-block mt-4 px-4 py-2 rounded-lg text-sm font-semibold transition-all hover:opacity-90'
 

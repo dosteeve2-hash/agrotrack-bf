@@ -57,17 +57,17 @@ export default function ParametresPage() {
     <div className="p-6 max-w-3xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Paramètres</h1>
-        <p className="text-gray-500 text-sm mt-0.5">Configuration de votre compte et de la coopérative</p>
+        <p className="text-gray-600 text-sm mt-0.5">Configuration de votre compte et de la coopérative</p>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-6">
+      <div className="flex flex-wrap gap-1 bg-gray-100 rounded-xl p-1 mb-6">
         {TABS.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium relative transition-colors"
-            style={{ color: activeTab === tab.id ? '#0A1628' : '#6b7280' }}>
+            className="flex-1 min-w-[7.5rem] flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium relative transition-colors"
+            style={{ color: activeTab === tab.id ? '#0A1628' : '#4b5563' }}>
             {activeTab === tab.id && (
               <motion.div
                 layoutId="tab-bg"
@@ -109,20 +109,20 @@ export default function ParametresPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Nom complet</label>
-                  <input type="text" value={profil.nom}
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Nom complet</label>
+                  <input aria-label="Nom complet" type="text" value={profil.nom}
                     onChange={e => setProfil(p => ({ ...p, nom: e.target.value }))}
                     className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Téléphone</label>
-                  <input type="tel" value={profil.telephone} placeholder="Avec l’indicatif de votre pays"
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Téléphone</label>
+                  <input aria-label="Téléphone" type="tel" value={profil.telephone} placeholder="Avec l’indicatif de votre pays"
                     onChange={e => setProfil(p => ({ ...p, telephone: e.target.value }))}
                     className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">{"Zone d'intervention"}</label>
-                  <input type="text" value={profil.zone} placeholder="Région, province ou localité"
+                  <label className="block text-xs font-medium text-gray-600 mb-1">{"Zone d'intervention"}</label>
+                  <input aria-label="Zone d’intervention" type="text" value={profil.zone} placeholder="Région, province ou localité"
                     onChange={e => setProfil(p => ({ ...p, zone: e.target.value }))}
                     className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50" />
                 </div>
@@ -133,20 +133,20 @@ export default function ParametresPage() {
               <div className="space-y-5">
                 <h2 className="text-base font-semibold text-gray-900 mb-4">Informations coopérative</h2>
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Nom de la coopérative</label>
-                  <input type="text" value={coop.nom} placeholder="Nom de la coopérative"
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Nom de la coopérative</label>
+                  <input aria-label="Nom de la coopérative" type="text" value={coop.nom} placeholder="Nom de la coopérative"
                     onChange={e => setCoop(p => ({ ...p, nom: e.target.value }))}
                     className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Région</label>
-                  <input type="text" value={coop.region} placeholder="Région, province ou État"
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Région</label>
+                  <input aria-label="Région" type="text" value={coop.region} placeholder="Région, province ou État"
                     onChange={e => setCoop(p => ({ ...p, region: e.target.value }))}
                     className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Nombre de membres cible</label>
-                  <input type="number" value={coop.nbMembersCible}
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Nombre de membres cible</label>
+                  <input aria-label="Nombre de membres cible" type="number" value={coop.nbMembersCible}
                     onChange={e => setCoop(p => ({ ...p, nbMembersCible: e.target.value }))}
                     className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50" />
                 </div>
@@ -165,8 +165,8 @@ export default function ParametresPage() {
               <div className="space-y-5">
                 <h2 className="text-base font-semibold text-gray-900 mb-4">Configuration des alertes</h2>
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Seuil pluviométrie (mm)</label>
-                  <input type="number" value={alertes.seuilEau} placeholder="Seuil en mm"
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Seuil pluviométrie (mm)</label>
+                  <input aria-label="Seuil pluviométrie (mm)" type="number" value={alertes.seuilEau} placeholder="Seuil en mm"
                     onChange={e => setAlertes(p => ({ ...p, seuilEau: e.target.value }))}
                     className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50" />
                   <p className="text-xs text-gray-400 mt-1">Alerte déclenchée si cumul mensuel sous ce seuil</p>

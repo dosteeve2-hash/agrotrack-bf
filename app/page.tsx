@@ -80,7 +80,7 @@ export default function LandingPage() {
         </div>
       </main>
 
-      <footer className="text-center py-8 text-white/30 text-sm border-t border-white/10">
+      <footer className="text-center py-8 text-white/60 text-sm border-t border-white/10">
         © {new Date().getFullYear()} AgroTrack — FORGE Afrika
       </footer>
     </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Thermometer, Droplets } from 'lucide-react'
+import { Droplets } from 'lucide-react'
 import { useParametresCompte } from '@/lib/compte/useParametresCompte'
 import { coordonneesDuCompte, urlMeteoActuelle, MESSAGE_METEO_A_VENIR } from '@/lib/compte/meteo'
 
@@ -97,10 +97,6 @@ export default function WeatherWidget() {
             <div className="flex items-center gap-1.5">
               <Droplets className="w-3.5 h-3.5 text-blue-400" />
               <span className="text-xs text-gray-600 font-medium">{weather.humidity}% humidité</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Thermometer className="w-3.5 h-3.5 text-orange-400" />
-              <span className="text-xs text-gray-600 font-medium">Ressenti +2°C</span>
             </div>
           </div>
         </div>

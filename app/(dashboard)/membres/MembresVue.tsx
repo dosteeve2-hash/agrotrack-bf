@@ -90,6 +90,7 @@ export function MembresVue({ membres, nomCooperative }: Props) {
           </p>
         </div>
         <button onClick={() => { setErreur(null); setShowModal(true) }}
+          aria-label="Ajouter un membre"
           className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all hover:opacity-90 flex-shrink-0"
           style={{ background: '#D4AF37', color: '#0A1628' }}>
           <UserPlus className="w-4 h-4" />

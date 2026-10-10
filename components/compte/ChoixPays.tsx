@@ -2,6 +2,7 @@
 
 import { useId, useMemo, useState } from 'react'
 import { filtrerPays, listerPays } from '@/lib/pays'
+import { useHydrated } from '@/lib/useHydrated'
 
 interface Props {
   valeur: string
@@ -13,7 +14,10 @@ export default function ChoixPays({ valeur, onChange }: Props) {
   const idRecherche = useId()
   const idListe = useId()
   const [recherche, setRecherche] = useState('')
-  const tous = useMemo(() => listerPays('fr'), [])
+  // Les noms viennent d'Intl, dont les données diffèrent entre le serveur et le navigateur :
+  // la liste n'est donc produite qu'après l'hydratation, pour ne pas désaccorder le rendu.
+  const monte = useHydrated()
+  const tous = useMemo(() => (monte ? listerPays('fr') : []), [monte])
   const visibles = useMemo(() => {
     const trouves = filtrerPays(tous, recherche)
     const choisi = tous.find(p => p.code === valeur)

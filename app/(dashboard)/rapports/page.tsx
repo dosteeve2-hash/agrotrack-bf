@@ -30,17 +30,17 @@ export default function RapportsPage() {
     <div className="p-6 max-w-6xl mx-auto print:p-4">
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 print:mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6 print:mb-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Rapport cooperative</h1>
           <p className="text-gray-600 text-sm mt-0.5">{moisLabel} {annee}</p>
         </div>
-        <div className="flex items-center gap-3 print:hidden">
-          <select value={mois} onChange={e => setMois(e.target.value)}
+        <div className="flex flex-wrap items-center gap-3 print:hidden">
+          <select aria-label="Mois" value={mois} onChange={e => setMois(e.target.value)}
             className="px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-cyan-400/50">
             {MOIS_OPTIONS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
           </select>
-          <select value={annee} onChange={e => setAnnee(e.target.value)}
+          <select aria-label="Année" value={annee} onChange={e => setAnnee(e.target.value)}
             className="px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-cyan-400/50">
             {[anneeCourante - 2, anneeCourante - 1, anneeCourante].map(y => <option key={y}>{y}</option>)}
           </select>
