@@ -2,24 +2,23 @@
 
 import { useState, type ElementType } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { User, Building2, Bell, Check } from 'lucide-react'
+import { User, Building2, Bell, Check, Globe2 } from 'lucide-react'
+import FormulaireCompte from '@/components/compte/FormulaireCompte'
+import CulturesSuivies from '@/components/compte/CulturesSuivies'
 
-type TabId = 'profil' | 'cooperative' | 'alertes'
-type CultureKey = 'Coton' | 'Sorgho' | 'Maïs' | 'Mil' | 'Sésame' | 'Karité'
+type TabId = 'profil' | 'cooperative' | 'compte' | 'alertes'
 
 const TABS: { id: TabId; label: string; icon: ElementType }[] = [
   { id: 'profil', label: 'Profil', icon: User },
   { id: 'cooperative', label: 'Coopérative', icon: Building2 },
+  { id: 'compte', label: 'Pays et devise', icon: Globe2 },
   { id: 'alertes', label: 'Alertes', icon: Bell },
 ]
-
-const REGIONS = ['Centre', 'Centre-Ouest', 'Hauts-Bassins', 'Cascades', 'Nord', 'Sahel', 'Est', 'Sud-Ouest']
-const CULTURES_LIST: CultureKey[] = ['Coton', 'Sorgho', 'Maïs', 'Mil', 'Sésame', 'Karité']
 
 interface ProfilState { nom: string; telephone: string; zone: string }
 interface CoopState {
   nom: string; region: string; nbMembersCible: string
-  cultures: Record<CultureKey, boolean>
+  cultures: string[]
 }
 interface AlertesState {
   seuilEau: string
@@ -32,21 +31,12 @@ export default function ParametresPage() {
   const [activeTab, setActiveTab] = useState<TabId>('profil')
   const [showToast, setShowToast] = useState(false)
 
-  const [profil, setProfil] = useState<ProfilState>({
-    nom: 'Koné Dramane',
-    telephone: '+226 70 12 34 56',
-    zone: 'Région du Centre-Ouest',
-  })
+  const [profil, setProfil] = useState<ProfilState>({ nom: '', telephone: '', zone: '' })
 
-  const [coop, setCoop] = useState<CoopState>({
-    nom: 'Coopérative Agricole du Centre-Ouest',
-    region: 'Centre-Ouest',
-    nbMembersCible: '200',
-    cultures: { Coton: true, Sorgho: true, Maïs: true, Mil: false, Sésame: true, Karité: false },
-  })
+  const [coop, setCoop] = useState<CoopState>({ nom: '', region: '', nbMembersCible: '', cultures: [] })
 
   const [alertes, setAlertes] = useState<AlertesState>({
-    seuilEau: '25',
+    seuilEau: '',
     alerteSecheresse: true,
     alertePrix: true,
     rapportMensuel: false,
@@ -109,10 +99,10 @@ export default function ParametresPage() {
                 <div className="flex items-center gap-4 mb-2">
                   <div className="w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold text-white flex-shrink-0"
                     style={{ background: '#0A1628' }}>
-                    {profil.nom.split(' ').map(p => p[0]).join('').slice(0, 2)}
+                    {profil.nom.split(' ').filter(Boolean).map(p => p[0]).join('').slice(0, 2).toUpperCase() || '?'}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{profil.nom}</p>
+                    <p className="text-sm font-medium text-gray-900">{profil.nom || 'Nom non renseigné'}</p>
                     <button className="text-xs mt-0.5 hover:underline" style={{ color: '#00BCD4' }}>
                       Changer la photo
                     </button>
@@ -126,13 +116,13 @@ export default function ParametresPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">Téléphone</label>
-                  <input type="tel" value={profil.telephone}
+                  <input type="tel" value={profil.telephone} placeholder="Avec l’indicatif de votre pays"
                     onChange={e => setProfil(p => ({ ...p, telephone: e.target.value }))}
                     className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">{"Zone d'intervention"}</label>
-                  <input type="text" value={profil.zone}
+                  <input type="text" value={profil.zone} placeholder="Région, province ou localité"
                     onChange={e => setProfil(p => ({ ...p, zone: e.target.value }))}
                     className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50" />
                 </div>
@@ -144,17 +134,15 @@ export default function ParametresPage() {
                 <h2 className="text-base font-semibold text-gray-900 mb-4">Informations coopérative</h2>
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">Nom de la coopérative</label>
-                  <input type="text" value={coop.nom}
+                  <input type="text" value={coop.nom} placeholder="Nom de la coopérative"
                     onChange={e => setCoop(p => ({ ...p, nom: e.target.value }))}
                     className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">Région</label>
-                  <select value={coop.region}
+                  <input type="text" value={coop.region} placeholder="Région, province ou État"
                     onChange={e => setCoop(p => ({ ...p, region: e.target.value }))}
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-cyan-400/50">
-                    {REGIONS.map(r => <option key={r}>{r}</option>)}
-                  </select>
+                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">Nombre de membres cible</label>
@@ -162,22 +150,14 @@ export default function ParametresPage() {
                     onChange={e => setCoop(p => ({ ...p, nbMembersCible: e.target.value }))}
                     className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50" />
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-2">Cultures suivies</label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {CULTURES_LIST.map(c => (
-                      <label key={c} className="flex items-center gap-2 cursor-pointer select-none">
-                        <input type="checkbox" checked={coop.cultures[c]}
-                          onChange={e => setCoop(p => ({
-                            ...p,
-                            cultures: { ...p.cultures, [c]: e.target.checked },
-                          }))}
-                          className="rounded" style={{ accentColor: '#00BCD4' }} />
-                        <span className="text-sm text-gray-700">{c}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
+                <CulturesSuivies valeur={coop.cultures} onChange={cultures => setCoop(p => ({ ...p, cultures }))} />
+              </div>
+            )}
+
+            {activeTab === 'compte' && (
+              <div>
+                <h2 className="text-base font-semibold text-gray-900 mb-4">Pays, devise et localisation</h2>
+                <FormulaireCompte />
               </div>
             )}
 
@@ -186,7 +166,7 @@ export default function ParametresPage() {
                 <h2 className="text-base font-semibold text-gray-900 mb-4">Configuration des alertes</h2>
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">Seuil pluviométrie (mm)</label>
-                  <input type="number" value={alertes.seuilEau}
+                  <input type="number" value={alertes.seuilEau} placeholder="Seuil en mm"
                     onChange={e => setAlertes(p => ({ ...p, seuilEau: e.target.value }))}
                     className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50" />
                   <p className="text-xs text-gray-400 mt-1">Alerte déclenchée si cumul mensuel sous ce seuil</p>
@@ -222,13 +202,13 @@ export default function ParametresPage() {
       </div>
 
       {/* Bouton sauvegarder */}
-      <div className="flex justify-end mt-6">
+      {activeTab !== 'compte' && <div className="flex justify-end mt-6">
         <button onClick={handleSave}
           className="px-6 py-2.5 text-sm font-semibold rounded-lg transition-all hover:opacity-90"
           style={{ background: '#0A1628', color: 'white' }}>
           Sauvegarder
         </button>
-      </div>
+      </div>}
 
       {/* Toast */}
       <AnimatePresence>
@@ -241,7 +221,7 @@ export default function ParametresPage() {
             className="fixed bottom-6 right-6 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-medium z-50"
             style={{ background: '#0A1628', color: 'white' }}>
             <Check className="w-4 h-4" style={{ color: '#10b981' }} />
-            Paramètres sauvegardés
+            Paramètres enregistrés
           </motion.div>
         )}
       </AnimatePresence>

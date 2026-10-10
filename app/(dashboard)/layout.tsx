@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { supabaseConfigure } from '@/lib/supabase/config'
 import { redirect } from 'next/navigation'
 import DashboardNav from '@/components/DashboardNav'
+import BandeauConfiguration from '@/components/compte/BandeauConfiguration'
 
 async function logoutAction() {
   'use server'
@@ -26,7 +27,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
     // `100vh` se fait manger par la barre d'adresse d'un navigateur Android.
     <div className="flex min-h-screen md:h-screen md:overflow-hidden" style={{ background: '#f1f5f9' }}>
       <DashboardNav userEmail={user.email ?? ''} logoutAction={logoutAction} />
-      <main className="flex-1 pt-14 md:pt-0 md:overflow-y-auto">{children}</main>
+      <main className="flex-1 pt-14 md:pt-0 md:overflow-y-auto">
+        <BandeauConfiguration />
+        {children}
+      </main>
     </div>
   )
 }
