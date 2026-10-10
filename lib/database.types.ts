@@ -1,5 +1,5 @@
 /**
- * Types de la base AgroTrack BF.
+ * Types de la base AgroTrack.
  *
  * Ecrits a la main, en miroir de `supabase/migrations/20260907120000_noyau.sql`.
  * `supabase gen types` les remplacera des qu'un projet Supabase existera ;
@@ -25,6 +25,12 @@ export interface CooperativeRow {
   province: string | null
   commune: string | null
   telephone: string | null
+  /** ISO 3166-1 alpha-2 ; nul tant que le compte n'a pas choisi son pays. */
+  pays_code: string | null
+  /** ISO 4217 : une seule devise par compte, sans conversion. */
+  devise_code: string | null
+  latitude: string | null
+  longitude: string | null
 }
 
 export interface ProfilRow {
@@ -74,7 +80,7 @@ export interface CollecteRow {
   client_id: string
   culture: Culture
   quantite_kg: string
-  /** Entier : le FCFA n'a pas de sous-unite. */
+  /** Entier. Colonne historique `_fcfa` ; la devise est celle de la coopérative. */
   prix_unitaire_fcfa: number
   date_collecte: string
   statut: StatutCollecte
