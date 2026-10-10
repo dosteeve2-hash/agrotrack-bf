@@ -2,6 +2,10 @@
 
 import { useState } from 'react'
 import { Download } from 'lucide-react'
+import type { CultureRow } from '@/app/(dashboard)/rapports/rapports.data'
+import { formatMontant } from '@/lib/format'
+import { libelleCulture } from '@/lib/cultures'
+import { useParametresCompte } from '@/lib/compte/useParametresCompte'
 
 interface KpiData {
   membresActifs: number
@@ -14,13 +18,26 @@ interface Props {
   moisLabel: string
   annee: string
   kpi: KpiData
+  cultures: CultureRow[]
 }
 
-const fmtFCFA = (n: number) =>
-  new Intl.NumberFormat('fr-FR').format(n) + ' FCFA'
+/**
+ * Les polices standard de jsPDF ne gèrent que le Latin-1 (et €) : les espaces fines
+ * insécables d'Intl et certains symboles de devise s'y afficheraient mal. On
+ * normalise les espaces et, si un symbole n'est pas imprimable, on écrit le code ISO.
+ */
+function montantPdf(montant: number, devise: string | null): string {
+  const texte = formatMontant(montant, devise).replace(/[\u00a0\u202f]/g, ' ')
+  if (!/[^\x20-\xff\u20ac]/.test(texte)) return texte
+  return `${formatMontant(montant, null).replace(/[\u00a0\u202f]/g, ' ')} ${devise ?? ''}`.trim()
+}
 
-export default function PDFExportButton({ moisLabel, annee, kpi }: Props) {
+const nombrePdf = (n: number) => formatMontant(n, null).replace(/[\u00a0\u202f]/g, ' ')
+
+export default function PDFExportButton({ moisLabel, annee, kpi, cultures }: Props) {
   const [loading, setLoading] = useState(false)
+  const devise = useParametresCompte()?.deviseCode ?? null
+  const fmt = (n: number) => montantPdf(n, devise)
 
   const handleExport = async () => {
     setLoading(true)
@@ -38,12 +55,12 @@ export default function PDFExportButton({ moisLabel, annee, kpi }: Props) {
       doc.setTextColor(255, 255, 255)
       doc.setFontSize(18)
       doc.setFont('helvetica', 'bold')
-      doc.text('AgroTrack BF', margin, 16)
+      doc.text('AgroTrack', margin, 16)
 
       doc.setFontSize(10)
       doc.setFont('helvetica', 'normal')
       doc.setTextColor(180, 200, 220)
-      doc.text('Rapport Coopérative — Koudougou, Burkina Faso', margin, 24)
+      doc.text('Rapport de la coopérative', margin, 24)
       doc.text(`Période : ${moisLabel} ${annee}`, margin, 31)
 
       // Date d'export (coin droit)
@@ -63,7 +80,7 @@ export default function PDFExportButton({ moisLabel, annee, kpi }: Props) {
       const kpis = [
         { label: 'Membres actifs',     value: kpi.membresActifs.toString(),      color: [0, 188, 212] as [number,number,number] },
         { label: 'Récoltes totales',   value: `${kpi.recoltesTonnes} t`,         color: [212, 175, 55] as [number,number,number] },
-        { label: 'Revenus totaux',     value: fmtFCFA(kpi.revenusTotal),         color: [16, 185, 129] as [number,number,number] },
+        { label: 'Revenus totaux',     value: fmt(kpi.revenusTotal),         color: [16, 185, 129] as [number,number,number] },
         { label: 'Incidents signalés', value: kpi.incidents.toString(),          color: [245, 158, 11] as [number,number,number] },
       ]
 
@@ -107,14 +124,6 @@ export default function PDFExportButton({ moisLabel, annee, kpi }: Props) {
       doc.text('Bilan cultures principales', margin, y)
       y += 8
 
-      const CULTURES = [
-        { culture: 'Mil',      surface: 42, production: 18900, revenus: 5103000  },
-        { culture: 'Sorgho',   surface: 35, production: 15750, revenus: 4252500  },
-        { culture: 'Maïs',     surface: 28, production: 16800, revenus: 5544000  },
-        { culture: 'Arachide', surface: 18, production:  7200, revenus: 5184000  },
-        { culture: 'Sésame',   surface:  9, production:  1350, revenus: 2835000  },
-      ]
-
       // Table header
       doc.setFillColor(10, 22, 40)
       doc.rect(margin, y, pageW - margin * 2, 8, 'F')
@@ -122,11 +131,11 @@ export default function PDFExportButton({ moisLabel, annee, kpi }: Props) {
       doc.setFontSize(8)
       doc.setFont('helvetica', 'bold')
       const cols = [margin + 2, margin + 38, margin + 70, margin + 105, margin + 140]
-      const headers = ['Culture', 'Surface (ha)', 'Production (kg)', 'Prix moy. FCFA/kg', 'Revenus FCFA']
+      const headers = ['Culture', 'Surface (ha)', 'Production (kg)', 'Prix moy./kg', 'Revenus']
       headers.forEach((h, i) => doc.text(h, cols[i], y + 5.5))
       y += 10
 
-      CULTURES.forEach((row, idx) => {
+      cultures.forEach((row, idx) => {
         if (idx % 2 === 0) {
           doc.setFillColor(245, 248, 252)
           doc.rect(margin, y - 1, pageW - margin * 2, 8, 'F')
@@ -134,12 +143,11 @@ export default function PDFExportButton({ moisLabel, annee, kpi }: Props) {
         doc.setTextColor(40, 60, 80)
         doc.setFont('helvetica', 'normal')
         doc.setFontSize(8.5)
-        const prixMoy = Math.round(row.revenus / row.production)
-        doc.text(row.culture, cols[0], y + 5)
+        doc.text(libelleCulture(row.culture), cols[0], y + 5)
         doc.text(row.surface.toString(), cols[1], y + 5)
-        doc.text(new Intl.NumberFormat('fr-FR').format(row.production), cols[2], y + 5)
-        doc.text(new Intl.NumberFormat('fr-FR').format(prixMoy), cols[3], y + 5)
-        doc.text(new Intl.NumberFormat('fr-FR').format(row.revenus), cols[4], y + 5)
+        doc.text(nombrePdf(row.production), cols[2], y + 5)
+        doc.text(fmt(row.prixMoyenKg), cols[3], y + 5)
+        doc.text(fmt(row.revenus), cols[4], y + 5)
         y += 9
       })
 
@@ -153,7 +161,7 @@ export default function PDFExportButton({ moisLabel, annee, kpi }: Props) {
       doc.setTextColor(150, 165, 185)
       doc.setFont('helvetica', 'italic')
       doc.text(
-        'Ce rapport a été généré automatiquement par AgroTrack BF. Les données sont à titre indicatif.',
+        'Ce rapport a été généré automatiquement par AgroTrack. Les données sont à titre indicatif.',
         margin, y
       )
 

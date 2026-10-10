@@ -5,6 +5,10 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Sprout, FlaskConical, Package, AlertTriangle, Search, Plus, X } from 'lucide-react'
 import { toast, Toaster } from 'sonner'
 import { useHydrated } from "@/lib/useHydrated"
+import EtatVide from '@/components/EtatVide'
+import ChampListeLibre from '@/components/compte/ChampListeLibre'
+import { useFormatMontant } from '@/lib/compte/useParametresCompte'
+import { CULTURES_SUGGEREES } from '@/lib/cultures'
 
 const NAVY = '#0A1628'
 const GOLD = '#D4AF37'
@@ -12,11 +16,10 @@ const CYAN = '#00D4FF'
 const BG2 = '#0c1a34'
 const BORDER = 'rgba(255,255,255,0.08)'
 
-const fmt = (n: number) => new Intl.NumberFormat('fr-FR').format(n) + ' FCFA'
 const fmtN = (n: number) => new Intl.NumberFormat('fr-FR').format(n)
 
 type Categorie = 'Engrais' | 'Semence' | 'Pesticide' | 'Herbicide' | 'Fongicide' | 'Matériel'
-type Culture = 'Maïs' | 'Sorgho' | 'Mil' | 'Coton' | 'Niébé' | 'Toutes'
+type Culture = string // nom libre, ou 'Toutes'
 type Unite = 'kg' | 'L' | 'Sac' | 'Bidon' | 'Unité'
 type Statut = 'Disponible' | 'Stock faible' | 'Épuisé' | 'Expiré'
 
@@ -26,22 +29,8 @@ interface Intrant {
   fournisseur: string; dateExpiration: string; statut: Statut
 }
 
-const DATA: Intrant[] = [
-  { id:'1', nom:'Urée 46%', categorie:'Engrais', culture:'Maïs', unite:'kg', prixUnitaire:600, stockDisponible:2500, seuilAlerte:500, fournisseur:'SOFITEX', dateExpiration:'2027-03-15', statut:'Disponible' },
-  { id:'2', nom:'NPK 15-15-15', categorie:'Engrais', culture:'Toutes', unite:'kg', prixUnitaire:650, stockDisponible:180, seuilAlerte:200, fournisseur:'SOFITEX', dateExpiration:'2026-12-31', statut:'Stock faible' },
-  { id:'3', nom:'DAP', categorie:'Engrais', culture:'Coton', unite:'Sac', prixUnitaire:18000, stockDisponible:45, seuilAlerte:10, fournisseur:'OCP Burkina', dateExpiration:'2027-06-01', statut:'Disponible' },
-  { id:'4', nom:'Semences maïs IRAT-200', categorie:'Semence', culture:'Maïs', unite:'kg', prixUnitaire:1200, stockDisponible:0, seuilAlerte:50, fournisseur:'INERA', dateExpiration:'2026-09-01', statut:'Épuisé' },
-  { id:'5', nom:'Semences sorgho S35', categorie:'Semence', culture:'Sorgho', unite:'kg', prixUnitaire:900, stockDisponible:320, seuilAlerte:100, fournisseur:'INERA', dateExpiration:'2026-10-15', statut:'Disponible' },
-  { id:'6', nom:'Semences niébé KVX', categorie:'Semence', culture:'Niébé', unite:'kg', prixUnitaire:1100, stockDisponible:85, seuilAlerte:100, fournisseur:'INERA', dateExpiration:'2026-08-20', statut:'Stock faible' },
-  { id:'7', nom:'Glyphosate 360', categorie:'Herbicide', culture:'Toutes', unite:'L', prixUnitaire:3500, stockDisponible:0, seuilAlerte:20, fournisseur:'Agrimex BF', dateExpiration:'2027-08-30', statut:'Épuisé' },
-  { id:'8', nom:'Atrazine 50%', categorie:'Herbicide', culture:'Maïs', unite:'kg', prixUnitaire:2800, stockDisponible:55, seuilAlerte:20, fournisseur:'Agrimex BF', dateExpiration:'2027-05-15', statut:'Disponible' },
-  { id:'9', nom:'Lambda-cyhalothrine', categorie:'Pesticide', culture:'Coton', unite:'L', prixUnitaire:12000, stockDisponible:12, seuilAlerte:15, fournisseur:'SunChem', dateExpiration:'2027-02-28', statut:'Stock faible' },
-  { id:'10', nom:'Mancozèbe', categorie:'Fongicide', culture:'Toutes', unite:'kg', prixUnitaire:4500, stockDisponible:38, seuilAlerte:20, fournisseur:'Agrimex BF', dateExpiration:'2027-01-10', statut:'Disponible' },
-  { id:'11', nom:'Thirame', categorie:'Fongicide', culture:'Niébé', unite:'kg', prixUnitaire:3200, stockDisponible:0, seuilAlerte:10, fournisseur:'SunChem', dateExpiration:'2026-11-20', statut:'Épuisé' },
-  { id:'12', nom:'Pulvérisateur 16L', categorie:'Matériel', culture:'Toutes', unite:'Unité', prixUnitaire:25000, stockDisponible:8, seuilAlerte:2, fournisseur:'Agri-Matériel BF', dateExpiration:'2030-01-01', statut:'Disponible' },
-  { id:'13', nom:'Semoir manuel', categorie:'Matériel', culture:'Toutes', unite:'Unité', prixUnitaire:15000, stockDisponible:3, seuilAlerte:2, fournisseur:'Agri-Matériel BF', dateExpiration:'2030-01-01', statut:'Disponible' },
-  { id:'14', nom:'Binette', categorie:'Matériel', culture:'Toutes', unite:'Unité', prixUnitaire:3500, stockDisponible:22, seuilAlerte:5, fournisseur:'Agri-Matériel BF', dateExpiration:'2030-01-01', statut:'Disponible' },
-]
+// Aucune donnée d'exemple : les intrants viendront de la base quand ce module y sera raccordé.
+const DATA: Intrant[] = []
 
 const STATUT_STYLE: Record<Statut, { bg: string; text: string; border: string }> = {
   'Disponible':  { bg: '#052e16', text: '#4ade80', border: '#166534' },
@@ -69,6 +58,7 @@ const EMPTY_FORM = { nom: '', categorie: 'Engrais', culture: 'Toutes', unite: 'k
 
 export default function IntrantsPage() {
   const mounted = useHydrated()
+  const fmt = useFormatMontant()
 
   const [search, setSearch]         = useState('')
   const [filterCat, setFilterCat]   = useState('Toutes')
@@ -105,6 +95,18 @@ export default function IntrantsPage() {
   })
 
   const inputCls = { background: '#ffffff0d', border: `1px solid ${BORDER}`, color: '#fff' }
+  const culturesPresentes = ['Toutes', ...new Set(DATA.map(i => i.culture).filter(c => c !== 'Toutes'))]
+
+  if (DATA.length === 0) {
+    return (
+      <div className="min-h-screen p-6 max-w-7xl mx-auto">
+        <h1 className="text-2xl font-bold" style={{ color: NAVY }}>Intrants agricoles</h1>
+        <p className="text-sm text-gray-600 mb-6">Engrais, semences et produits phytosanitaires</p>
+        <EtatVide titre="Aucun intrant : ajoutez le premier"
+          texte="Vos engrais, semences et produits de traitement apparaîtront ici avec leur stock et leur prix. L’enregistrement des intrants n’est pas encore raccordé à la base dans cette version." />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen p-6 max-w-7xl mx-auto">
@@ -118,7 +120,7 @@ export default function IntrantsPage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold" style={{ color: NAVY }}>Intrants agricoles</h1>
-            <p className="text-sm text-gray-500">Engrais, semences et produits phytosanitaires</p>
+            <p className="text-sm text-gray-600">Engrais, semences et produits phytosanitaires</p>
           </div>
         </div>
         <button onClick={() => setShowNew(true)}
@@ -185,7 +187,7 @@ export default function IntrantsPage() {
           </div>
           {([
             { label:'Catégorie', val:filterCat, set:setFilterCat, opts:['Toutes','Engrais','Semence','Pesticide','Herbicide','Fongicide','Matériel'] },
-            { label:'Culture',   val:filterCul, set:setFilterCul, opts:['Toutes','Maïs','Sorgho','Mil','Coton','Niébé'] },
+            { label:'Culture',   val:filterCul, set:setFilterCul, opts:culturesPresentes },
             { label:'Statut',    val:filterSt,  set:setFilterSt,  opts:['Tous','Disponible','Stock faible','Épuisé','Expiré'] },
           ]).map(({ label, val, set, opts }) => (
             <select key={label} value={val} onChange={e => set(e.target.value)}
@@ -227,7 +229,7 @@ export default function IntrantsPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-white/50 text-xs">{fmtN(i.seuilAlerte)} {i.unite}</td>
-                    <td className="px-4 py-3 text-white/80 whitespace-nowrap">{fmtN(i.prixUnitaire)} FCFA</td>
+                    <td className="px-4 py-3 text-white/80 whitespace-nowrap">{fmt(i.prixUnitaire)}</td>
                     <td className="px-4 py-3">
                       <span className={`text-xs ${expiresSoon(i.dateExpiration) ? 'text-orange-400 font-semibold' : 'text-white/50'}`}>
                         {i.dateExpiration}
@@ -310,9 +312,9 @@ export default function IntrantsPage() {
             </div>
             <div className="space-y-3">
               {([
-                { label:'Nom',                   key:'nom',             type:'text',   ph:'ex: Urée 46%' },
-                { label:'Fournisseur',            key:'fournisseur',     type:'text',   ph:'ex: SOFITEX' },
-                { label:'Prix unitaire (FCFA)',   key:'prixUnitaire',    type:'number', ph:'0' },
+                { label:'Nom',                   key:'nom',             type:'text',   ph:'Nom du produit' },
+                { label:'Fournisseur',            key:'fournisseur',     type:'text',   ph:'Nom du fournisseur' },
+                { label:'Prix unitaire',   key:'prixUnitaire',    type:'number', ph:'0' },
                 { label:'Stock disponible',       key:'stockDisponible', type:'number', ph:'0' },
                 { label:'Seuil alerte',           key:'seuilAlerte',     type:'number', ph:'0' },
               ] as { label:string; key:string; type:string; ph:string }[]).map(({ label, key, type, ph }) => (
@@ -326,7 +328,6 @@ export default function IntrantsPage() {
               ))}
               {([
                 { label:'Catégorie', key:'categorie', opts:['Engrais','Semence','Pesticide','Herbicide','Fongicide','Matériel'] },
-                { label:'Culture',   key:'culture',   opts:['Toutes','Maïs','Sorgho','Mil','Coton','Niébé'] },
                 { label:'Unité',     key:'unite',     opts:['kg','L','Sac','Bidon','Unité'] },
               ] as { label:string; key:string; opts:string[] }[]).map(({ label, key, opts }) => (
                 <div key={key}>
@@ -338,6 +339,11 @@ export default function IntrantsPage() {
                   </select>
                 </div>
               ))}
+              <ChampListeLibre label="Culture" valeur={form.culture}
+                onChange={v => setForm(f => ({ ...f, culture: v }))}
+                suggestions={['Toutes', ...CULTURES_SUGGEREES]}
+                labelClassName="text-xs text-white/50 block mb-1"
+                className="w-full px-3 py-2 rounded-lg text-sm outline-none cursor-pointer" style={{ ...inputCls }} />
             </div>
             <button onClick={() => {
               if (!form.nom.trim()) { toast.error("Le nom de l'intrant est requis"); return }

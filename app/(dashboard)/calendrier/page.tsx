@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Calendar, ChevronLeft, ChevronRight, Plus, X } from 'lucide-react'
+import EtatVide from '@/components/EtatVide'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -28,21 +29,10 @@ const EVENT_COLORS: Record<EventType, { dot: string; bg: string }> = {
 const JOURS     = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
 const MOIS      = ['Janvier','Février','Mars','Avril','Mai','Juin',
                    'Juillet','Août','Septembre','Octobre','Novembre','Décembre']
-const PARCELLES = ['Parcelle A','Parcelle B','Parcelle C','Parcelle D','Parcelle E']
 const TYPES: EventType[] = ['Semis','Récolte','Traitement','Irrigation']
 
-// ─── Initial events (Août 2026) ───────────────────────────────────────────────
-
-const INIT_EVENTS: AgriEvent[] = [
-  { id:'1', date:'2026-08-03', type:'Semis',      parcelle:'Parcelle A', description:'Semis maïs variété locale',        notes:'Après la 1ère pluie' },
-  { id:'2', date:'2026-08-07', type:'Irrigation', parcelle:'Parcelle B', description:'Irrigation sorgho',                notes:'Pompe solaire, 3h' },
-  { id:'3', date:'2026-08-12', type:'Traitement', parcelle:'Parcelle A', description:'Fertilisation NPK parcelle A',     notes:'50 kg/ha' },
-  { id:'4', date:'2026-08-15', type:'Traitement', parcelle:'Parcelle C', description:'Traitement phytosanitaire coton',  notes:'Fongicide + insecticide' },
-  { id:'5', date:'2026-08-19', type:'Récolte',    parcelle:'Parcelle D', description:'Récolte sésame – 2ème coupe',      notes:'Rendement estimé 600 kg/ha' },
-  { id:'6', date:'2026-08-21', type:'Semis',      parcelle:'Parcelle B', description:'Semis mil tardif',                 notes:'Densité 1,2 m × 0,8 m' },
-  { id:'7', date:'2026-08-25', type:'Irrigation', parcelle:'Parcelle E', description:'Irrigation coton – phase floraison', notes:'Besoin hydrique critique' },
-  { id:'8', date:'2026-08-28', type:'Récolte',    parcelle:'Parcelle C', description:'Récolte sorgho',                   notes:'Rendement estimé 1,5 t/ha' },
-]
+// Aucun événement d'exemple : l'agenda démarre vide.
+const INIT_EVENTS: AgriEvent[] = []
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -63,7 +53,7 @@ export default function CalendrierPage() {
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState({
     date: '', type: 'Semis' as EventType,
-    parcelle: 'Parcelle A', description: '', notes: '',
+    parcelle: '', description: '', notes: '',
   })
 
   // Calendar grid
@@ -88,7 +78,7 @@ export default function CalendrierPage() {
     if (!form.date || !form.description) return
     setEvents(prev => [...prev, { id: String(Date.now()), ...form }])
     setShowModal(false)
-    setForm({ date:'', type:'Semis', parcelle:'Parcelle A', description:'', notes:'' })
+    setForm({ date:'', type:'Semis', parcelle:'', description:'', notes:'' })
   }
 
   // Upcoming 14 days
@@ -105,7 +95,7 @@ export default function CalendrierPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Calendrier agricole</h1>
-          <p className="text-gray-500 text-sm mt-0.5">{events.length} événements planifiés</p>
+          <p className="text-gray-500 text-sm mt-0.5">{events.length} événement{events.length > 1 ? 's' : ''} planifié{events.length > 1 ? 's' : ''}</p>
         </div>
         <button onClick={() => setShowModal(true)}
           className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90"
@@ -113,6 +103,14 @@ export default function CalendrierPage() {
           <Plus className="w-4 h-4" /> Ajouter un événement
         </button>
       </div>
+
+      {events.length === 0 && (
+        <div className="mb-6">
+          <EtatVide titre="Aucun événement : ajoutez le premier"
+            texte="Planifiez vos semis, traitements, irrigations et récoltes. Les événements sont gardés sur cet appareil pour l’instant."
+            action={{ libelle: 'Ajouter un événement', onClick: () => setShowModal(true) }} />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
@@ -207,7 +205,7 @@ export default function CalendrierPage() {
                       <div className="flex items-center gap-1.5 mb-0.5">
                         <span className="w-2 h-2 rounded-full" style={{ background: EVENT_COLORS[ev.type].dot }} />
                         <span className="text-xs font-semibold" style={{ color: EVENT_COLORS[ev.type].dot }}>{ev.type}</span>
-                        <span className="text-xs text-gray-400">· {ev.parcelle}</span>
+                        {ev.parcelle && <span className="text-xs text-gray-600">· {ev.parcelle}</span>}
                       </div>
                       <p className="text-sm text-gray-700">{ev.description}</p>
                       {ev.notes && <p className="text-xs text-gray-400 mt-0.5">{ev.notes}</p>}
@@ -246,16 +244,15 @@ export default function CalendrierPage() {
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">Parcelle</label>
-                <select value={form.parcelle} onChange={e => setForm(f => ({ ...f, parcelle: e.target.value }))}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white">
-                  {PARCELLES.map(p => <option key={p}>{p}</option>)}
-                </select>
+                <input type="text" value={form.parcelle} placeholder="Nom de la parcelle (facultatif)"
+                  onChange={e => setForm(f => ({ ...f, parcelle: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">Description *</label>
                 <input type="text" value={form.description}
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                  placeholder="Ex : Semis mil variété locale"
+                  placeholder="Décrivez l’activité"
                   className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50" />
               </div>
               <div>

@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useHydrated } from "@/lib/useHydrated"
+import EtatVide from '@/components/EtatVide'
+import { useFormatMontant } from '@/lib/compte/useParametresCompte'
 import {
   Users, ShoppingBasket, Banknote, TrendingUp, Leaf,
   MapPin, Award, BarChart3,
@@ -18,47 +20,21 @@ const GOLD  = '#D4AF37'
 const CYAN  = '#00BCD4'
 const GREEN = '#10B981'
 const PURPLE = '#8B5CF6'
-const ORANGE = '#F59E0B'
 const NAVY2 = '#060e1a'
 const TEXT2 = '#94A3B8'
 const CARD  = 'rgba(255,255,255,0.03)'
 const BORD  = '1px solid rgba(255,255,255,0.07)'
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
-const COLLECTES_MENSUELLES = [
-  { mois: 'Jan', collectes: 18400, membres: 118, revenus: 4140000 },
-  { mois: 'Fév', collectes: 22100, membres: 120, revenus: 4972500 },
-  { mois: 'Mar', collectes: 26500, membres: 122, revenus: 5962500 },
-  { mois: 'Avr', collectes: 31800, membres: 123, revenus: 7155000 },
-  { mois: 'Mai', collectes: 38200, membres: 124, revenus: 8595000 },
-  { mois: 'Jun', collectes: 40300, membres: 125, revenus: 9067500 },
-  { mois: 'Jul', collectes: 45200, membres: 127, revenus: 10170000 },
-]
+// Aucune donnée d'exemple : les statistiques seront calculées à partir des collectes
+// quand ce module sera raccordé à la base.
+const COLLECTES_MENSUELLES: { mois: string; collectes: number; membres: number; revenus: number }[] = []
 
-const PRODUCTION_PAR_CULTURE = [
-  { culture: 'Coton',  kg: 18900, pct: 41.8, color: GOLD   },
-  { culture: 'Maïs',   kg: 12400, pct: 27.4, color: CYAN   },
-  { culture: 'Sorgho', kg:  7800, pct: 17.3, color: GREEN  },
-  { culture: 'Sésame', kg:  3600, pct:  8.0, color: PURPLE },
-  { culture: 'Mil',    kg:  2500, pct:  5.5, color: ORANGE },
-]
+const PRODUCTION_PAR_CULTURE: { culture: string; kg: number; pct: number; color: string }[] = []
 
-const PRODUCTION_PAR_VILLAGE = [
-  { village: 'Koudougou',  production: 14200, membres: 42 },
-  { village: 'Sabou',      production:  9800, membres: 28 },
-  { village: 'Réo',        production:  8400, membres: 24 },
-  { village: 'Pouni',      production:  6100, membres: 18 },
-  { village: 'Goundi',     production:  4300, membres: 12 },
-  { village: 'Tenado',     production:  2400, membres:  3 },
-]
+const PRODUCTION_PAR_VILLAGE: { village: string; production: number; membres: number }[] = []
 
-const TOP_MEMBRES = [
-  { nom: 'Ouédraogo Adama',  village: 'Koudougou', culture: 'Coton',  kg: 2840, rang: 1 },
-  { nom: 'Sawadogo Moussa',  village: 'Sabou',     culture: 'Maïs',   kg: 2190, rang: 2 },
-  { nom: 'Compaoré Fatou',   village: 'Réo',       culture: 'Coton',  kg: 1960, rang: 3 },
-  { nom: 'Traoré Ibrahim',   village: 'Koudougou', culture: 'Sorgho', kg: 1820, rang: 4 },
-  { nom: 'Kaboré Aminata',   village: 'Pouni',     culture: 'Sésame', kg: 1440, rang: 5 },
-]
+const TOP_MEMBRES: { nom: string; village: string; culture: string; kg: number; rang: number }[] = []
 
 // ─── KPI Card ─────────────────────────────────────────────────────────────────
 function KpiCard({
@@ -80,13 +56,15 @@ function KpiCard({
           style={{ background: `${color}18` }}>
           <Icon className="w-5 h-5" style={{ color }} />
         </div>
-        <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
-          style={{
-            background: up ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
-            color: up ? GREEN : '#ef4444',
-          }}>
-          {delta}
-        </span>
+        {delta && (
+          <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
+            style={{
+              background: up ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
+              color: up ? GREEN : '#ef4444',
+            }}>
+            {delta}
+          </span>
+        )}
       </div>
       <p className="text-2xl font-black text-white mb-1">{value}</p>
       <p className="text-sm" style={{ color: TEXT2 }}>{label}</p>
@@ -108,7 +86,24 @@ export default function StatistiquesPage() {
   const mounted = useHydrated()
   const [periode, setPeriode] = useState<'3m' | '6m' | '12m'>('6m')
 
+  const fmt = useFormatMontant()
+
   if (!mounted) return <div style={{ height: 400 }} />
+
+  if (COLLECTES_MENSUELLES.length === 0) {
+    return (
+      <div style={{ background: NAVY, minHeight: '100vh', padding: 24, color: 'white' }}>
+        <h1 className="text-3xl font-black mb-1 flex items-center gap-2">
+          <BarChart3 className="w-8 h-8" style={{ color: GOLD }} />
+          Statistiques
+        </h1>
+        <p style={{ color: TEXT2, marginBottom: 24 }}>Tableau de bord analytique</p>
+        <EtatVide sombre
+          titre="Pas encore de statistiques"
+          texte="Elles se calculeront à partir de vos collectes, membres et récoltes. Les collectes ne sont pas encore raccordées à la base dans cette version." />
+      </div>
+    )
+  }
 
   const sliceMap = { '3m': 4, '6m': 4, '12m': 0 }
   const data = COLLECTES_MENSUELLES.slice(sliceMap[periode])
@@ -118,10 +113,10 @@ export default function StatistiquesPage() {
   const membresActifs  = COLLECTES_MENSUELLES[COLLECTES_MENSUELLES.length - 1].membres
 
   const kpis = [
-    { icon: Users,         label: 'Membres actifs',     value: membresActifs + '',          delta: '+9 vs jan', up: true,  color: CYAN   },
-    { icon: ShoppingBasket,label: 'Collectes totales',  value: (totalCollectes / 1000).toFixed(1) + ' t', delta: '+23 % vs s-1', up: true, color: GOLD },
-    { icon: Banknote,      label: 'Revenus générés',    value: (totalRevenus / 1_000_000).toFixed(1) + 'M FCFA', delta: '+31 % vs s-1', up: true, color: GREEN },
-    { icon: Leaf,          label: 'Cultures suivies',   value: '5',                         delta: 'stable', up: true,  color: PURPLE },
+    { icon: Users,         label: 'Membres actifs',     value: membresActifs + '',          delta: '', up: true,  color: CYAN   },
+    { icon: ShoppingBasket,label: 'Collectes totales',  value: (totalCollectes / 1000).toFixed(1) + ' t', delta: '', up: true, color: GOLD },
+    { icon: Banknote,      label: 'Revenus générés',    value: fmt(totalRevenus), delta: '', up: true, color: GREEN },
+    { icon: Leaf,          label: 'Cultures suivies',   value: String(PRODUCTION_PAR_CULTURE.length), delta: '', up: true,  color: PURPLE },
   ]
 
   return (
@@ -139,7 +134,7 @@ export default function StatistiquesPage() {
             <BarChart3 className="w-8 h-8" style={{ color: GOLD }} />
             Statistiques
           </h1>
-          <p style={{ color: TEXT2 }}>Tableau de bord analytique · Saison 2026</p>
+          <p style={{ color: TEXT2 }}>Tableau de bord analytique</p>
         </div>
         <div className="flex gap-2">
           {(['3m', '6m', '12m'] as const).map(p => (
@@ -194,7 +189,7 @@ export default function StatistiquesPage() {
             <Tooltip contentStyle={TT_STYLE}
               formatter={(v, name) => name === 'collectes'
                 ? [Number(v).toLocaleString('fr') + ' kg', 'Collectes']
-                : [(Number(v) / 1_000_000).toFixed(2) + 'M FCFA', 'Revenus']} />
+                : [fmt(Number(v)), 'Revenus']} />
             <Area yAxisId="left"  type="monotone" dataKey="collectes" stroke={GOLD} strokeWidth={2}
               fill="url(#gradCollectes)" dot={{ fill: GOLD, r: 4 }} />
             <Area yAxisId="right" type="monotone" dataKey="revenus"   stroke={CYAN} strokeWidth={2}

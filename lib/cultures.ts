@@ -54,3 +54,13 @@ export function libelleMoyen(valeur: string): string {
   if (valeur === 'orange_money' || valeur === 'wave') return 'Mobile money'
   return MOYENS_PAIEMENT.find(m => m.valeur === valeur)?.libelle ?? valeur
 }
+
+// Couleurs des graphiques
+const PALETTE_CULTURES = ['#8b5cf6', '#ef4444', '#f59e0b', '#22d98a', '#c07d10', '#00BCD4', '#ec4899', '#64748b']
+
+/** Une couleur stable par nom de culture, sans liste de cultures figée. */
+export function couleurCulture(nom: string): string {
+  let h = 0
+  for (const c of nom) h = (h * 31 + c.charCodeAt(0)) >>> 0
+  return PALETTE_CULTURES[h % PALETTE_CULTURES.length]
+}

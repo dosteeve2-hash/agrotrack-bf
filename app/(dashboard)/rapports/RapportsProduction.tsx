@@ -1,9 +1,10 @@
 // app/(dashboard)/rapports/RapportsProduction.tsx
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import {
-  PRODUCTION_6MOIS, CULTURES_TABLE, BAR_COLORS, CULTURE_TABLE_COLORS,
-  fmt, fmtFCFA,
+  PRODUCTION_6MOIS, CULTURES_TABLE, fmt,
 } from './rapports.data'
+import { useFormatMontant } from '@/lib/compte/useParametresCompte'
+import { couleurCulture, libelleCulture } from '@/lib/cultures'
 
 interface Props {
   moisLabel: string
@@ -11,6 +12,8 @@ interface Props {
 }
 
 export function RapportsProduction({ moisLabel, annee }: Props) {
+  const fmtMontant = useFormatMontant()
+  const cultures = [...new Set(PRODUCTION_6MOIS.flatMap(p => Object.keys(p).filter(k => k !== 'mois')))]
   const totalSurface    = CULTURES_TABLE.reduce((a, r) => a + r.surface, 0)
   const totalProduction = CULTURES_TABLE.reduce((a, r) => a + r.production, 0)
   const totalRevenus    = CULTURES_TABLE.reduce((a, r) => a + r.revenus, 0)
@@ -29,8 +32,8 @@ export function RapportsProduction({ moisLabel, annee }: Props) {
             <YAxis tick={{ fontSize: 11 }} unit=" t" />
             <Tooltip formatter={(v) => [typeof v === 'number' ? `${v} t` : String(v)]} />
             <Legend />
-            {(['Mil', 'Sorgho', 'Maïs', 'Arachide', 'Sésame'] as const).map(c => (
-              <Bar key={c} dataKey={c} fill={BAR_COLORS[c]} radius={[3, 3, 0, 0]} />
+            {cultures.map(c => (
+              <Bar key={c} dataKey={c} name={libelleCulture(c)} fill={couleurCulture(c)} radius={[3, 3, 0, 0]} />
             ))}
           </BarChart>
         </ResponsiveContainer>
@@ -57,15 +60,15 @@ export function RapportsProduction({ moisLabel, annee }: Props) {
               <tr key={row.culture} className="hover:bg-gray-50 transition-colors">
                 <td className="px-5 py-3">
                   <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold"
-                    style={{ background: CULTURE_TABLE_COLORS[row.culture] + '20', color: CULTURE_TABLE_COLORS[row.culture] }}>
-                    {row.culture}
+                    style={{ background: couleurCulture(row.culture) + '20', color: couleurCulture(row.culture) }}>
+                    {libelleCulture(row.culture)}
                   </span>
                 </td>
                 <td className="px-5 py-3 text-gray-600">{row.parcelles}</td>
                 <td className="px-5 py-3 text-gray-600">{row.surface} ha</td>
                 <td className="px-5 py-3 font-semibold text-gray-900">{fmt(row.production)} kg</td>
-                <td className="px-5 py-3 text-gray-600">{fmt(row.prixMoyenKg)} FCFA</td>
-                <td className="px-5 py-3 font-bold text-gray-900">{fmtFCFA(row.revenus)}</td>
+                <td className="px-5 py-3 text-gray-600">{fmtMontant(row.prixMoyenKg)}</td>
+                <td className="px-5 py-3 font-bold text-gray-900">{fmtMontant(row.revenus)}</td>
               </tr>
             ))}
           </tbody>
@@ -75,7 +78,7 @@ export function RapportsProduction({ moisLabel, annee }: Props) {
               <td className="px-5 py-3 font-bold text-gray-900">{totalSurface.toFixed(1)} ha</td>
               <td className="px-5 py-3 font-bold text-gray-900">{fmt(totalProduction)} kg</td>
               <td className="px-5 py-3 text-gray-400">—</td>
-              <td className="px-5 py-3 font-bold" style={{ color: '#10b981' }}>{fmtFCFA(totalRevenus)}</td>
+              <td className="px-5 py-3 font-bold" style={{ color: '#10b981' }}>{fmtMontant(totalRevenus)}</td>
             </tr>
           </tfoot>
           </table>

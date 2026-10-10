@@ -4,21 +4,26 @@
 import { useState } from 'react'
 import { Printer, Users, Wheat, Banknote, AlertTriangle } from 'lucide-react'
 import {
-  KPI_DATA, INCIDENTS_MOCK, MOIS_OPTIONS, GRAVITE_STYLES, TYPE_COLORS, fmtFCFA,
+  KPI_DATA, INCIDENTS, CULTURES_TABLE, MOIS_OPTIONS, GRAVITE_STYLES, TYPE_COLORS,
 } from './rapports.data'
+import EtatVide from '@/components/EtatVide'
+import { useFormatMontant } from '@/lib/compte/useParametresCompte'
 import { RapportsProduction } from './RapportsProduction'
 import PDFExportButton from '@/components/PDFExportButton'
 import { useHydrated } from "@/lib/useHydrated"
 
 export default function RapportsPage() {
   const mounted = useHydrated()
-  const [mois,    setMois]    = useState('07')
-  const [annee,   setAnnee]   = useState('2026')
+  const maintenant = new Date()
+  const anneeCourante = maintenant.getFullYear()
+  const [mois,    setMois]    = useState(String(maintenant.getMonth() + 1).padStart(2, '0'))
+  const [annee,   setAnnee]   = useState(String(anneeCourante))
+  const fmtMontant = useFormatMontant()
 
   if (!mounted) return null
 
   const key = `${annee}-${mois}`
-  const kpi = KPI_DATA[key] ?? { membresActifs: 0, recoltesTonnes: 0, revenusTotal: 0, incidents: 0 }
+  const kpi = KPI_DATA[key]
   const moisLabel = MOIS_OPTIONS.find(m => m.value === mois)?.label ?? mois
 
   return (
@@ -28,7 +33,7 @@ export default function RapportsPage() {
       <div className="flex items-center justify-between mb-6 print:mb-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Rapport cooperative</h1>
-          <p className="text-gray-500 text-sm mt-0.5">{moisLabel} {annee} - Koudougou, Burkina Faso</p>
+          <p className="text-gray-600 text-sm mt-0.5">{moisLabel} {annee}</p>
         </div>
         <div className="flex items-center gap-3 print:hidden">
           <select value={mois} onChange={e => setMois(e.target.value)}
@@ -37,9 +42,9 @@ export default function RapportsPage() {
           </select>
           <select value={annee} onChange={e => setAnnee(e.target.value)}
             className="px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-cyan-400/50">
-            {['2024', '2025', '2026'].map(y => <option key={y}>{y}</option>)}
+            {[anneeCourante - 2, anneeCourante - 1, anneeCourante].map(y => <option key={y}>{y}</option>)}
           </select>
-          <PDFExportButton moisLabel={moisLabel} annee={annee} kpi={kpi} />
+          {kpi && <PDFExportButton moisLabel={moisLabel} annee={annee} kpi={kpi} cultures={CULTURES_TABLE} />}
           <button onClick={() => window.print()}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all hover:opacity-90"
             style={{ background: '#0A1628', color: 'white' }}>
@@ -48,17 +53,23 @@ export default function RapportsPage() {
         </div>
       </div>
 
+      {!kpi && (
+        <EtatVide titre="Aucune donnée pour cette période"
+          texte="Le rapport se calcule à partir de vos collectes, parcelles et paiements. Ces modules ne sont pas encore raccordés à la base dans cette version, donc aucun chiffre n’est affiché plutôt qu’un chiffre inventé." />
+      )}
+
+      {kpi && <>
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
           { label: 'Membres actifs',     value: kpi.membresActifs.toString(),  icon: Users,         color: '#00BCD4' },
           { label: 'Recoltes totales',   value: kpi.recoltesTonnes + ' t',     icon: Wheat,         color: '#D4AF37' },
-          { label: 'Revenus FCFA',       value: fmtFCFA(kpi.revenusTotal),     icon: Banknote,      color: '#10b981' },
+          { label: 'Revenus',            value: fmtMontant(kpi.revenusTotal),  icon: Banknote,      color: '#10b981' },
           { label: 'Incidents signales', value: kpi.incidents.toString(),       icon: AlertTriangle, color: kpi.incidents > 3 ? '#ef4444' : '#f59e0b' },
         ].map(k => (
           <div key={k.label} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs text-gray-500">{k.label}</p>
+              <p className="text-xs text-gray-600">{k.label}</p>
               <div className="p-1.5 rounded-lg" style={{ background: k.color + '20' }}>
                 <k.icon className="w-4 h-4" style={{ color: k.color }} />
               </div>
@@ -76,11 +87,11 @@ export default function RapportsPage() {
           <h3 className="font-semibold text-gray-800 text-sm">Incidents du mois</h3>
           <span className="text-xs px-2 py-0.5 rounded-full font-medium"
             style={{ background: '#fee2e2', color: '#991b1b' }}>
-            {INCIDENTS_MOCK.length} alertes
+            {INCIDENTS.length} alertes
           </span>
         </div>
         <div className="divide-y divide-gray-50">
-          {INCIDENTS_MOCK.map(inc => (
+          {INCIDENTS.map(inc => (
             <div key={inc.id} className="flex items-start gap-4 px-5 py-4 hover:bg-gray-50 transition-colors">
               <div className="p-2 rounded-lg flex-shrink-0 mt-0.5"
                 style={{ background: TYPE_COLORS[inc.type] + '15' }}>
@@ -102,6 +113,7 @@ export default function RapportsPage() {
           ))}
         </div>
       </div>
+      </>}
 
       <style>{`
         @media print {
