@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AlertTriangle, Info, CheckCircle2, X, Bell, Droplets, Thermometer, CloudRain } from 'lucide-react'
+import { useParametresCompte } from '@/lib/compte/useParametresCompte'
+import { coordonneesDuCompte, urlMeteoActuelle, MESSAGE_METEO_A_VENIR } from '@/lib/compte/meteo'
 
 type Niveau = 'critique' | 'attention' | 'info'
 
@@ -13,11 +15,6 @@ interface Alerte {
   message: string
   heure: string
 }
-
-const ALERTES_STATIQUES: Alerte[] = [
-  { id: 'a2', niveau: 'attention', titre: 'Stade critique mil', message: "Apport d'engrais azoté recommandé sous 3 jours pour maintenir le rendement estimé.", heure: 'Il y a 4h' },
-  { id: 'a4', niveau: 'info', titre: 'Récolte sorgho Parcelle 3', message: 'Rendement estimé : 1,8 T/ha — soit +12 % vs prévisions. Planifier la logistique de collecte.', heure: 'Il y a 8h' },
-]
 
 const CONFIG: Record<Niveau, { icon: typeof AlertTriangle; bg: string; border: string; text: string; badge: string; badgeBg: string }> = {
   critique: { icon: AlertTriangle, bg: 'rgba(239,68,68,0.06)', border: 'rgba(239,68,68,0.3)', text: '#ef4444', badge: 'Critique', badgeBg: 'rgba(239,68,68,0.12)' },
@@ -40,12 +37,16 @@ function buildMeteoAlertes(temperature: number, humidity: number): Alerte[] {
 }
 
 export default function AlertesAgro() {
-  const [alertes, setAlertes] = useState<Alerte[]>(ALERTES_STATIQUES)
+  const [alertes, setAlertes] = useState<Alerte[]>([])
   const [meteoLoaded, setMeteoLoaded] = useState(false)
+  const coords = coordonneesDuCompte(useParametresCompte())
+  const latitude = coords?.latitude
+  const longitude = coords?.longitude
 
   useEffect(() => {
+    if (latitude === undefined || longitude === undefined) return
     const controller = new AbortController()
-    fetch('https://api.open-meteo.com/v1/forecast?latitude=12.37&longitude=-1.53&current=temperature_2m,relative_humidity_2m,weather_code&timezone=Africa%2FAbidjan', { signal: controller.signal })
+    fetch(urlMeteoActuelle({ latitude, longitude }, 'temperature_2m,relative_humidity_2m,weather_code'), { signal: controller.signal })
       .then(r => r.json())
       .then(data => {
         const c = data?.current
@@ -62,7 +63,7 @@ export default function AlertesAgro() {
       .catch(() => {})
       .finally(() => setMeteoLoaded(true))
     return () => controller.abort()
-  }, [])
+  }, [latitude, longitude])
 
   const marquerTraite = (id: string) => {
     setAlertes(prev => prev.filter(a => a.id !== id))
@@ -70,17 +71,18 @@ export default function AlertesAgro() {
 
   const nbCritiques = alertes.filter(a => a.niveau === 'critique').length
 
-  if (alertes.length === 0 && meteoLoaded) {
+  if (alertes.length === 0 && (meteoLoaded || !coords)) {
     return (
       <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 mb-6">
         <div className="flex items-center gap-2 mb-1">
           <Bell className="w-4 h-4" style={{ color: '#D4AF37' }} />
           <h2 className="font-semibold text-gray-900 text-sm">Alertes agronomiques</h2>
         </div>
-        <div className="flex items-center gap-2 mt-3 text-sm text-gray-400">
-          <CheckCircle2 className="w-4 h-4 text-green-500" />
-          Toutes les alertes ont été traitées
+        <div className="flex items-center gap-2 mt-3 text-sm text-gray-600">
+          <CheckCircle2 className="w-4 h-4 text-green-600" />
+          Aucune alerte active
         </div>
+        {!coords && <p className="text-xs text-gray-600 mt-2">{MESSAGE_METEO_A_VENIR}</p>}
       </div>
     )
   }

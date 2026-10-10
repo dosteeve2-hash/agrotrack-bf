@@ -1,13 +1,19 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useParametresCompte } from '@/lib/compte/useParametresCompte'
+import { coordonneesDuCompte, urlMeteoActuelle } from '@/lib/compte/meteo'
 
 export default function NavAlertBadge() {
   const [hasCritique, setHasCritique] = useState(false)
+  const coords = coordonneesDuCompte(useParametresCompte())
+  const latitude = coords?.latitude
+  const longitude = coords?.longitude
 
   useEffect(() => {
+    if (latitude === undefined || longitude === undefined) return
     const controller = new AbortController()
-    fetch('https://api.open-meteo.com/v1/forecast?latitude=12.37&longitude=-1.53&current=temperature_2m,relative_humidity_2m&timezone=Africa%2FAbidjan', { signal: controller.signal })
+    fetch(urlMeteoActuelle({ latitude, longitude }, 'temperature_2m,relative_humidity_2m'), { signal: controller.signal })
       .then(r => r.json())
       .then(data => {
         const c = data?.current
@@ -18,9 +24,9 @@ export default function NavAlertBadge() {
       })
       .catch(() => {})
     return () => controller.abort()
-  }, [])
+  }, [latitude, longitude])
 
-  if (!hasCritique) return null
+  if (!coords || !hasCritique) return null
 
   return (
     <span

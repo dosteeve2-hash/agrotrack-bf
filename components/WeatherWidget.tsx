@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { Thermometer, Droplets } from 'lucide-react'
+import { useParametresCompte } from '@/lib/compte/useParametresCompte'
+import { coordonneesDuCompte, urlMeteoActuelle, MESSAGE_METEO_A_VENIR } from '@/lib/compte/meteo'
 
 interface WeatherData {
   temperature: number
@@ -23,11 +25,15 @@ export default function WeatherWidget() {
   const [weather, setWeather] = useState<WeatherData | null>(null)
   const [error, setError] = useState(false)
   const [loading, setLoading] = useState(true)
+  const coords = coordonneesDuCompte(useParametresCompte())
+  const latitude = coords?.latitude
+  const longitude = coords?.longitude
 
   useEffect(() => {
+    if (latitude === undefined || longitude === undefined) return
     const controller = new AbortController()
     fetch(
-      'https://api.open-meteo.com/v1/forecast?latitude=12.37&longitude=-1.53&current=temperature_2m,relative_humidity_2m,weather_code&timezone=Africa%2FAbidjan',
+      urlMeteoActuelle({ latitude, longitude }, 'temperature_2m,relative_humidity_2m,weather_code'),
       { signal: controller.signal }
     )
       .then(r => r.json())
@@ -43,21 +49,25 @@ export default function WeatherWidget() {
       .catch(() => setError(true))
       .finally(() => setLoading(false))
     return () => controller.abort()
-  }, [])
+  }, [latitude, longitude])
 
   const info = weather ? getWeatherInfo(weather.weatherCode) : null
 
   return (
     <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-medium text-gray-500">Météo — Ouagadougou</span>
-        <span className="text-xs px-2 py-0.5 rounded-full font-medium"
-          style={{ background: '#00BCD420', color: '#00BCD4' }}>
-          En direct
-        </span>
+        <span className="text-xs font-medium text-gray-600">Météo locale</span>
+        {coords && (
+          <span className="text-xs px-2 py-0.5 rounded-full font-medium"
+            style={{ background: '#00BCD420', color: '#0e7490' }}>
+            En direct
+          </span>
+        )}
       </div>
 
-      {loading && (
+      {!coords && <p className="text-sm text-gray-600">{MESSAGE_METEO_A_VENIR}</p>}
+
+      {coords && loading && (
         <div className="animate-pulse space-y-2">
           <div className="h-8 w-24 rounded bg-gray-100" />
           <div className="h-4 w-32 rounded bg-gray-100" />
@@ -65,11 +75,11 @@ export default function WeatherWidget() {
         </div>
       )}
 
-      {error && !loading && (
-        <p className="text-sm text-gray-400">Données indisponibles</p>
+      {coords && error && !loading && (
+        <p className="text-sm text-gray-600">Données indisponibles</p>
       )}
 
-      {weather && info && (
+      {coords && weather && info && (
         <div>
           {/* Température + icône */}
           <div className="flex items-end gap-3 mb-3">
@@ -78,7 +88,7 @@ export default function WeatherWidget() {
               <p className="text-3xl font-bold text-gray-900 leading-none">
                 {weather.temperature}°C
               </p>
-              <p className="text-xs text-gray-400 mt-0.5">{info.label}</p>
+              <p className="text-xs text-gray-600 mt-0.5">{info.label}</p>
             </div>
           </div>
 
@@ -86,11 +96,11 @@ export default function WeatherWidget() {
           <div className="flex gap-4">
             <div className="flex items-center gap-1.5">
               <Droplets className="w-3.5 h-3.5 text-blue-400" />
-              <span className="text-xs text-gray-500 font-medium">{weather.humidity}% humidité</span>
+              <span className="text-xs text-gray-600 font-medium">{weather.humidity}% humidité</span>
             </div>
             <div className="flex items-center gap-1.5">
               <Thermometer className="w-3.5 h-3.5 text-orange-400" />
-              <span className="text-xs text-gray-500 font-medium">Ressenti +2°C</span>
+              <span className="text-xs text-gray-600 font-medium">Ressenti +2°C</span>
             </div>
           </div>
         </div>
