@@ -2,16 +2,12 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import type { Culture } from '@/lib/database.types'
+import { nettoyerCulture } from '@/lib/cultures'
 
 export interface ResultatAjout {
   ok: boolean
   message?: string
 }
-
-const CULTURES_VALIDES: readonly Culture[] = [
-  'mil', 'sorgho', 'mais', 'coton', 'sesame', 'karite', 'arachide', 'niebe',
-]
 
 /**
  * Ajoute un producteur et sa premiere parcelle.
@@ -39,14 +35,12 @@ export async function ajouterMembre(donnees: FormData): Promise<ResultatAjout> {
   const nom = String(donnees.get('nom') ?? '').trim()
   const village = String(donnees.get('village') ?? '').trim()
   const telephone = String(donnees.get('telephone') ?? '').trim()
-  const culture = String(donnees.get('culture') ?? '')
+  const culture = nettoyerCulture(String(donnees.get('culture') ?? ''))
   const surface = Number.parseFloat(String(donnees.get('surface') ?? ''))
 
   if (!nom) return { ok: false, message: 'Le nom est obligatoire.' }
   if (!village) return { ok: false, message: 'Le village est obligatoire.' }
-  if (!CULTURES_VALIDES.includes(culture as Culture)) {
-    return { ok: false, message: 'Culture inconnue.' }
-  }
+  if (!culture) return { ok: false, message: 'La culture est obligatoire.' }
   if (!Number.isFinite(surface) || surface <= 0) {
     return { ok: false, message: 'La surface doit être un nombre supérieur à 0.' }
   }

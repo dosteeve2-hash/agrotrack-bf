@@ -2,10 +2,11 @@
 
 import { useMemo, useState, useTransition } from 'react'
 import { UserPlus } from 'lucide-react'
+import EtatVide from '@/components/EtatVide'
 import type { MembreVue } from '@/lib/data/membres'
 import type { Culture, StatutMembre } from '@/lib/database.types'
-import { LIBELLE_CULTURE } from '@/lib/database.types'
-import { CULTURES_SAISISSABLES, DEFAULT_FORM, type FormState } from './membres.data'
+import { libelleCulture } from '@/lib/cultures'
+import { DEFAULT_FORM, type FormState } from './membres.data'
 import { MembresList } from './MembresList'
 import { MembreModal } from './MembreModal'
 import { ajouterMembre } from './actions'
@@ -29,6 +30,12 @@ export function MembresVue({ membres, nomCooperative }: Props) {
   // cooperative a les siens, et une liste figee excluait toutes les autres.
   const villages = useMemo(
     () => ['Tous', ...[...new Set(membres.map(m => m.village))].sort()],
+    [membres],
+  )
+
+  // Les cultures proposées au filtre viennent des membres, comme les villages.
+  const cultures = useMemo(
+    () => [...new Set(membres.flatMap(m => m.cultures))].sort(),
     [membres],
   )
 
@@ -115,7 +122,7 @@ export function MembresVue({ membres, nomCooperative }: Props) {
           aria-label="Filtrer par culture"
           className="px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white">
           <option value="Toutes">Toutes</option>
-          {CULTURES_SAISISSABLES.map(c => <option key={c} value={c}>{LIBELLE_CULTURE[c]}</option>)}
+          {cultures.map(c => <option key={c} value={c}>{libelleCulture(c)}</option>)}
         </select>
         <select value={filterStatut} onChange={e => setFilterStatut(e.target.value as StatutMembre | 'Tous')}
           aria-label="Filtrer par statut"
@@ -126,7 +133,13 @@ export function MembresVue({ membres, nomCooperative }: Props) {
         </select>
       </div>
 
-      <MembresList membres={filtered} />
+      {membres.length === 0 ? (
+        <EtatVide titre="Aucun membre : ajoutez le premier"
+          texte="Chaque membre peut avoir plusieurs parcelles et cultures."
+          action={{ libelle: 'Ajouter un membre', onClick: () => { setErreur(null); setShowModal(true) } }} />
+      ) : (
+        <MembresList membres={filtered} />
+      )}
 
       <MembreModal
         open={showModal}

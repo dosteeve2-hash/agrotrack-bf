@@ -1,5 +1,5 @@
 /**
- * Suite de tests Vitest — Page Parcelles (AgroTrack BF)
+ * Suite de tests Vitest — Page Parcelles (AgroTrack)
  * Couvre : rendu, titre, KPIs×4, noms parcelles mock, cultures, statuts,
  *          barre de recherche, filtre statut, modal détail, bouton Nouvelle parcelle
  */
@@ -104,9 +104,9 @@ describe('ParcellesPage — rendu de base', () => {
     expect(screen.getByText(/10 parcelles/)).toBeInTheDocument()
   })
 
-  it('4. affiche "Saison 2026" dans le sous-titre', () => {
+  it('4. n’impose aucune saison dans le sous-titre', () => {
     afficher()
-    expect(screen.getByText(/Saison 2026/)).toBeInTheDocument()
+    expect(screen.queryByText(/Saison 2026/)).not.toBeInTheDocument()
   })
 })
 
@@ -366,10 +366,12 @@ describe('ParcellesPage — bouton Nouvelle parcelle', () => {
     fireEvent.click(screen.getByRole('button', { name: /Nouvelle parcelle/ }))
     fireEvent.change(screen.getByPlaceholderText('Parcelle Nord A'), { target: { value: 'Parcelle Test Z' } })
     fireEvent.change(screen.getByPlaceholderText('2.5'), { target: { value: '3' } })
+    fireEvent.change(screen.getByLabelText('Culture *'), { target: { value: 'Café' } })
     fireEvent.click(screen.getByRole('button', { name: 'Créer la parcelle' }))
 
     await waitFor(() => expect(creerParcelle).toHaveBeenCalledTimes(1))
     const envoye = creerParcelle.mock.calls[0][0]
+    expect(envoye.get('culture')).toBe('Café')
     expect(envoye.get('nom')).toBe('Parcelle Test Z')
     expect(envoye.get('superficie')).toBe('3')
     expect(envoye.get('membre_id')).toBe('m1')
@@ -380,6 +382,7 @@ describe('ParcellesPage — bouton Nouvelle parcelle', () => {
     fireEvent.click(screen.getByRole('button', { name: /Nouvelle parcelle/ }))
     fireEvent.change(screen.getByPlaceholderText('Parcelle Nord A'), { target: { value: 'Parcelle Test Z' } })
     fireEvent.change(screen.getByPlaceholderText('2.5'), { target: { value: '3' } })
+    fireEvent.change(screen.getByLabelText('Culture *'), { target: { value: 'Riz' } })
     fireEvent.click(screen.getByRole('button', { name: 'Créer la parcelle' }))
 
     await waitFor(() =>
@@ -392,10 +395,33 @@ describe('ParcellesPage — bouton Nouvelle parcelle', () => {
     fireEvent.click(screen.getByRole('button', { name: /Nouvelle parcelle/ }))
     fireEvent.change(screen.getByPlaceholderText('Parcelle Nord A'), { target: { value: 'Parcelle Test Z' } })
     fireEvent.change(screen.getByPlaceholderText('2.5'), { target: { value: '3' } })
+    fireEvent.change(screen.getByLabelText('Culture *'), { target: { value: 'Riz' } })
     fireEvent.click(screen.getByRole('button', { name: 'Créer la parcelle' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Superficie invalide.')
     expect(screen.getByPlaceholderText('Parcelle Nord A')).toBeInTheDocument()
+  })
+
+  it('46. une culture absente de la liste se saisit librement avec « Autre… »', async () => {
+    afficher()
+    fireEvent.click(screen.getByRole('button', { name: /Nouvelle parcelle/ }))
+    fireEvent.change(screen.getByPlaceholderText('Parcelle Nord A'), { target: { value: 'Parcelle Test Z' } })
+    fireEvent.change(screen.getByPlaceholderText('2.5'), { target: { value: '3' } })
+    fireEvent.change(screen.getByLabelText('Culture *'), { target: { value: '__autre__' } })
+    fireEvent.change(screen.getByLabelText('Culture * : saisie libre'), { target: { value: 'Quinoa' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Créer la parcelle' }))
+
+    await waitFor(() => expect(creerParcelle).toHaveBeenCalledTimes(1))
+    expect(creerParcelle.mock.calls[0][0].get('culture')).toBe('Quinoa')
+  })
+
+  it('47. sans culture, rien n’est envoyé', () => {
+    afficher()
+    fireEvent.click(screen.getByRole('button', { name: /Nouvelle parcelle/ }))
+    fireEvent.change(screen.getByPlaceholderText('Parcelle Nord A'), { target: { value: 'Parcelle Test Z' } })
+    fireEvent.change(screen.getByPlaceholderText('2.5'), { target: { value: '3' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Créer la parcelle' }))
+    expect(creerParcelle).not.toHaveBeenCalled()
   })
 
   it('43. sans nom ni superficie, rien n’est envoyé', () => {
@@ -409,14 +435,22 @@ describe('ParcellesPage — bouton Nouvelle parcelle', () => {
 // ─── 8. Cas limites ───────────────────────────────────────────────────────────
 
 describe('ParcellesVue — coopérative sans parcelle', () => {
-  it('44. n’affiche pas « NaN kg/ha » quand il n’y a aucune parcelle', () => {
-    render(<ParcellesVue parcelles={[]} membres={MEMBRES} />)
+  it('44. n’affiche ni « NaN » ni chiffre inventé quand il n’y a aucune parcelle', () => {
+    const { container } = render(<ParcellesVue parcelles={[]} membres={MEMBRES} />)
     expect(screen.queryByText(/NaN/)).not.toBeInTheDocument()
-    expect(screen.getByText('0 kg/ha')).toBeInTheDocument()
+    expect(container.textContent).not.toMatch(/kg\/ha/)
   })
 
-  it('45. annonce zéro parcelle plutôt qu’une liste muette', () => {
+  it('45. annonce zéro parcelle par un état vide avec l’action pour commencer', () => {
     render(<ParcellesVue parcelles={[]} membres={MEMBRES} />)
-    expect(screen.getByText(/0 parcelles/)).toBeInTheDocument()
+    expect(screen.getByText(/0 parcelle/)).toBeInTheDocument()
+    expect(screen.getByText('Aucune parcelle : ajoutez la première')).toBeInTheDocument()
+    fireEvent.click(screen.getAllByRole('button', { name: /Nouvelle parcelle/ })[0])
+    expect(screen.getByText('Créer la parcelle')).toBeInTheDocument()
+  })
+
+  it('48. sans membre, l’état vide renvoie vers les membres', () => {
+    render(<ParcellesVue parcelles={[]} membres={[]} />)
+    expect(screen.getByRole('link', { name: 'Ajouter un membre' })).toHaveAttribute('href', '/membres')
   })
 })

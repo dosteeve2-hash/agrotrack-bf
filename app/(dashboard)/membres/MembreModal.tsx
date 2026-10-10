@@ -1,10 +1,9 @@
 // app/(dashboard)/membres/MembreModal.tsx
 import { X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import type { Culture } from '@/lib/database.types'
-import { LIBELLE_CULTURE } from '@/lib/database.types'
 import type { FormState } from './membres.data'
-import { CULTURES_SAISISSABLES } from './membres.data'
+import ChampListeLibre from '@/components/compte/ChampListeLibre'
+import { CULTURES_SUGGEREES } from '@/lib/cultures'
 
 interface Props {
   open: boolean
@@ -41,37 +40,33 @@ export function MembreModal({ open, form, erreur, enCours, onClose, onChange, on
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Nom complet *</label>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Nom complet *</label>
                 <input type="text" value={form.nom}
                   onChange={e => onChange({ nom: e.target.value })}
-                  placeholder="Ouédraogo Adama"
+                  placeholder="Prénom et nom"
                   className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Téléphone</label>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Téléphone</label>
                 <input type="tel" value={form.telephone}
                   onChange={e => onChange({ telephone: e.target.value })}
-                  placeholder="+226 70 00 00 00"
+                  placeholder="Numéro, avec l’indicatif si besoin"
                   className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Village *</label>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Village ou localité *</label>
                 <input type="text" value={form.village}
                   onChange={e => onChange({ village: e.target.value })}
-                  placeholder="Koudougou"
+                  placeholder="Village, quartier ou localité"
                   className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400/50" />
               </div>
+              <ChampListeLibre label="Culture principale *" valeur={form.culture}
+                onChange={culture => onChange({ culture })}
+                suggestions={CULTURES_SUGGEREES} placeholderVide="Choisir une culture"
+                labelClassName="block text-xs font-medium text-gray-600 mb-1"
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-cyan-400/50" />
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Culture principale</label>
-                <select value={form.culture} onChange={e => onChange({ culture: e.target.value as Culture })}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-cyan-400/50">
-                  {CULTURES_SAISISSABLES.map(c => (
-                    <option key={c} value={c}>{LIBELLE_CULTURE[c]}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Surface (ha)</label>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Surface (ha)</label>
                 <input type="number" step="0.1" min="0" value={form.surface}
                   onChange={e => onChange({ surface: e.target.value })}
                   placeholder="2.5"
@@ -88,7 +83,7 @@ export function MembreModal({ open, form, erreur, enCours, onClose, onChange, on
                 className="flex-1 px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                 Annuler
               </button>
-              <button onClick={onSubmit} disabled={!form.nom.trim() || !form.village.trim() || enCours}
+              <button onClick={onSubmit} disabled={!form.nom.trim() || !form.village.trim() || !form.culture.trim() || enCours}
                 className="flex-1 px-4 py-2 text-sm font-semibold rounded-lg transition-all hover:opacity-90 disabled:opacity-40"
                 style={{ background: '#D4AF37', color: '#0A1628' }}>
                 {enCours ? 'Enregistrement…' : 'Ajouter'}

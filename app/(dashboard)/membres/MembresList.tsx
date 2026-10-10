@@ -1,8 +1,9 @@
 // app/(dashboard)/membres/MembresList.tsx
 import { MapPin } from 'lucide-react'
 import type { MembreVue } from '@/lib/data/membres'
-import { LIBELLE_CULTURE, LIBELLE_STATUT_MEMBRE } from '@/lib/database.types'
-import { CULTURE_COLORS, AVATAR_COLORS, initiales } from './membres.data'
+import { LIBELLE_STATUT_MEMBRE } from '@/lib/database.types'
+import { couleurCulture, libelleCulture } from '@/lib/cultures'
+import { AVATAR_COLORS, initiales } from './membres.data'
 
 interface Props {
   membres: MembreVue[]
@@ -32,8 +33,8 @@ export function MembresList({ membres }: Props) {
               <span className="hidden sm:flex items-center gap-1">
                 {m.cultures.slice(0, 2).map(c => (
                   <span key={c} className="px-2.5 py-0.5 rounded-full text-xs font-medium"
-                    style={{ background: CULTURE_COLORS[c] + '20', color: CULTURE_COLORS[c] }}>
-                    {LIBELLE_CULTURE[c]}
+                    style={{ background: couleurCulture(libelleCulture(c)) + '20', color: couleurCulture(libelleCulture(c)) }}>
+                    {libelleCulture(c)}
                   </span>
                 ))}
                 {m.cultures.length > 2 && (

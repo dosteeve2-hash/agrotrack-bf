@@ -7,14 +7,20 @@
  * etre modifie en meme temps que la migration.
  */
 
-export type Culture =
-  | 'mil' | 'sorgho' | 'mais' | 'coton' | 'sesame' | 'karite' | 'arachide' | 'niebe'
+/**
+ * Texte libre : plus d'énumération fermée (voir la migration
+ * 20261010120000_pays_devise_cultures.sql). Les anciennes valeurs en minuscules
+ * ('coton', 'sesame'…) restent lisibles via `libelleCulture` (lib/cultures.ts).
+ */
+export type Culture = string
 
 export type StatutMembre = 'actif' | 'inactif'
-export type TypeSol = 'lateritique' | 'argilo_sableux' | 'sablonneux' | 'limoneux'
+/** Texte libre ; suggestions et anciennes valeurs dans lib/cultures.ts. */
+export type TypeSol = string
 export type StatutParcelle = 'active' | 'en_repos' | 'en_preparation' | 'recoltee'
 export type StatutCollecte = 'en_attente' | 'validee' | 'rejetee'
-export type MoyenPaiement = 'especes' | 'orange_money' | 'wave' | 'virement'
+/** Texte libre ; catégories proposées dans lib/cultures.ts (MOYENS_PAIEMENT). */
+export type MoyenPaiement = string
 export type RoleUtilisateur = 'gerant' | 'agent'
 
 export interface CooperativeRow {
@@ -102,28 +108,10 @@ export interface PaiementRow {
   date_paiement: string
 }
 
-/** Libelles affiches. La base stocke des identifiants stables, pas du francais. */
-export const LIBELLE_CULTURE: Record<Culture, string> = {
-  mil: 'Mil',
-  sorgho: 'Sorgho',
-  mais: 'Maïs',
-  coton: 'Coton',
-  sesame: 'Sésame',
-  karite: 'Karité',
-  arachide: 'Arachide',
-  niebe: 'Niébé',
-}
-
+/** Libellés affichés. La base stocke des identifiants stables, pas du français. */
 export const LIBELLE_STATUT_MEMBRE: Record<StatutMembre, string> = {
   actif: 'Actif',
   inactif: 'Inactif',
-}
-
-export const LIBELLE_TYPE_SOL: Record<TypeSol, string> = {
-  lateritique: 'Latéritique',
-  argilo_sableux: 'Argilo-sableux',
-  sablonneux: 'Sablonneux',
-  limoneux: 'Limoneux',
 }
 
 export const LIBELLE_STATUT_PARCELLE: Record<StatutParcelle, string> = {
