@@ -1,6 +1,6 @@
 # PLAN — AgroTrack indépendant du pays
 
-Date : 2026-10-10 · Statut : **proposition, aucun code applicatif écrit** · Règle #15 du fondateur (six documents en un seul fichier)
+Date : 2026-10-10 · Statut : **étapes pays-neutres implémentées (voir « Avancement » en fin de document) ; météo et sol reportés (priorité 2)** · Règle #15 du fondateur (six documents en un seul fichier)
 Inventaire détaillé des liens au pays : [`docs/inventaire-pays.md`](docs/inventaire-pays.md)
 
 Marquage : `[texte]` dit par le fondateur · `[déduit]` inféré du code ou de la doctrine · `[inconnu]` à confirmer · `[vérifié]` / `[non vérifié]` pour les sources externes.
@@ -185,3 +185,42 @@ Formule d'interface proposée : « Information indicative issue de [source], rel
 3. **Devises** : une seule devise par compte, sans conversion, avec montants stockés en unité mineure entière : d'accord ? (oui / non, je veux le multi-devises)
 4. **Données de démonstration** : le jeu actuel (Koudougou, noms burkinabè) est conservé comme **une** démo marquée « DÉMO » parmi d'autres, ou supprimé ? (conserver / supprimer / remplacer par une démo neutre)
 5. **Premier test réel** : qui est la première personne, hors Burkina ou au Burkina, avec un prénom, qui essaiera la version pays-neutre ? (nom, ou « personne pour l'instant », auquel cas le plan s'arrête à l'étape 3)
+
+---
+
+## Décisions du fondateur (10/10/2026) — réponses aux cinq questions
+
+1. **Nom** : le produit s'appelle **« AgroTrack »**, sans « BF » (nom d'usage). Le dépôt GitHub, le projet Vercel et les URLs ne sont **pas** renommés : étape manuelle plus tard.
+2. **Météo et sol : REPORTÉS (priorité 2).** Aucune API météo ou sol n'est intégrée. Les trois composants météo existants lisent désormais les coordonnées des paramètres du compte, et affichent « Météo locale : bientôt disponible (à venir) » à défaut.
+   **À RAPPELER AU FONDATEUR AVANT LA PREMIÈRE VENTE** : Open-Meteo gratuit = **usage non commercial** ; il faut son plan payant (ou une autre source) avant tout usage commercial. Les composants appellent déjà `api.open-meteo.com` quand des coordonnées existent : tant que le plan payant n'est pas souscrit, ne pas vendre l'affichage météo. Licence et plafonds à relire sur les pages officielles (non lues directement, voir §2).
+3. **Devises** : une seule devise par compte, **sans conversion**. Formateur unique `formatMontant(montant, devise, locale)` (Intl, fr-FR par défaut) ; la devise vient des paramètres du compte, proposée selon le pays, modifiable.
+4. **Démonstration** : les données de démo (Koudougou, noms, villages, SOFITEX…) sont **remplacées par du neutre et zéro** : aucun lieu, aucune personne, aucun chiffre inventé ; états vides clairs avec l'action pour commencer.
+5. **Premier testeur** : le fondateur, Steeve — le plan va donc au-delà de l'étape 3.
+
+## Avancement (PR #21)
+
+Légende : [x] fait · [ ] reste à faire · [~] partiel.
+
+| # | Étape du plan | État |
+|---|---|---|
+| 0 | Valider le plan, questions ouvertes | [x] réponses ci-dessus |
+| 1 | Formateur central et fin des « FCFA » écrits à la main | [x] `lib/format.ts` + `useFormatMontant` ; tests XOF, GHS, EUR, TRY, 0. Le composant `Montant` du brief UI n'a pas été créé : le hook suffit |
+| 2 | Schéma de base : pays/devise/lieu sur `cooperatives`, RLS | [~] migration **écrite, non appliquée** (`supabase/migrations/20261010120000_pays_devise_cultures.sql`) : colonnes, politique de mise à jour du gérant, enums -> texte. **Pas** de tables `cultures_catalogue`, `cultures_cooperative`, `meteo_cache`, `sol_releve` (cultures libres en texte ; météo et sol reportés). Test RLS impossible sans base |
+| 3 | Onboarding pays -> lieu -> cultures -> devise | [~] pays (liste complète, recherche), devise proposée, coordonnées facultatives saisies à la main, dans `/onboarding` puis `/parametres`. Reste : recherche de lieu et bouton « utiliser ma position » (nécessitent une API de géocodage, non vérifiée) ; unités de masse et de surface ; cultures suivies saisies dans `/parametres` mais pas dans l'onboarding |
+| 4 | Météo par coordonnées, route serveur, cache | [ ] **reporté (priorité 2)**. Fait seulement : coordonnées du compte à la place de Ouagadougou, « bientôt disponible » sinon |
+| 5 | Sol | [ ] **reporté (priorité 2)**. Fait : type de sol en texte libre + suggestions |
+| 6 | Cultures libres + montants en unité mineure | [~] cultures, sols et moyens de paiement libres (code + migration). Montants : colonnes `*_fcfa` **non renommées** ; procédure `montant` + devise documentée dans la migration. Pas de stockage en unité mineure : Intl gère les décimales à l'affichage |
+| 7 | Textes pays-neutres, lien « charger la démo » | [x] textes neutres ; plus de démo à charger (zéro donnée) |
+| 8 | Renommage « AgroTrack BF » -> « AgroTrack » | [~] texte visible fait ; dépôt, Vercel, URLs, `package.json`, `.env.production.example` non touchés |
+| 9 | Vérification navigateur réelle (Règle #1) | [x] Playwright, build réel, 375 et 1280 px : voir la PR |
+
+### Ce qui reste (priorité décroissante)
+
+- **Appliquer la migration** sur une base (Neon ou Supabase) : action du fondateur ; il n'existe aucun projet Supabase pour ce dépôt. Tant qu'elle n'est pas appliquée, le pays et la devise ne vivent que sur l'appareil (localStorage).
+- **Brancher à la base** les modules qui ne le sont pas : collectes, paiements, stocks, intrants, équipements, finances, statistiques, rapports, cycles de cultures. Seuls membres et parcelles lisent la base ; les autres écrans affichent un état vide qui le dit. Leurs boutons d'ajout ne sont pas fonctionnels (préexistant) et sont masqués tant que l'écran est vide.
+- Page `/parametres` : le bouton « Sauvegarder » des onglets Profil, Coopérative et Alertes n'enregistre rien (préexistant) ; seul l'onglet « Pays et devise » enregistre.
+- Onboarding : recherche de lieu / position GPS, unités de masse et de surface, cultures.
+- **Météo et sol (priorité 2)** : étapes 4 et 5 du plan, après la décision sur la licence Open-Meteo. Les seuils de `buildMeteoAlertes` restent codés pour un climat sahélien sans source : à rendre réglables ou à retirer avant d'afficher des alertes à un autre pays.
+- Renommage manuel : dépôt GitHub, projet Vercel, alias `agrotrack-bf.vercel.app`, `package.json`, compte de démonstration `demo@agrotrack-bf.com`, `.env.production.example`.
+- `PRD.md`, `MARKETING.md`, `LOVABLE_PROTOCOL.md` : renommés mais décrivent encore le marché de lancement burkinabè ; à réécrire par le fondateur.
+- Dette préexistante signalée : libellé « Guide d'Acmo » dans le menu ; le compte de démonstration `demo@agrotrack-bf.com` / mot de passe codé en dur dans `app/auth/login/page.tsx` ; tests de `ParcellesPage` encore sur une fixture à noms de lieux réels (non visibles).

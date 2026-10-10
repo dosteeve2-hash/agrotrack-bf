@@ -164,7 +164,7 @@ export default function StatistiquesPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-white font-bold text-lg">Collectes & Revenus</h2>
-            <p className="text-sm" style={{ color: TEXT2 }}>Évolution mensuelle saison 2026</p>
+            <p className="text-sm" style={{ color: TEXT2 }}>Évolution mensuelle</p>
           </div>
           <TrendingUp className="w-5 h-5" style={{ color: GOLD }} />
         </div>
@@ -336,7 +336,7 @@ export default function StatistiquesPage() {
         <div className="flex items-center gap-2 mb-5">
           <Award className="w-5 h-5" style={{ color: GOLD }} />
           <h2 className="text-white font-bold">Top producteurs</h2>
-          <span className="ml-auto text-xs" style={{ color: TEXT2 }}>Saison 2026</span>
+          <span className="ml-auto text-xs" style={{ color: TEXT2 }}>Saison en cours</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
