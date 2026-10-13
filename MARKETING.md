@@ -75,13 +75,9 @@ Accès par rôles : le directeur voit tout, l'agent de terrain saisit ses villag
 
 ---
 
-## Ils Nous Font Confiance
+## Pilotes recherchés
 
-> *"On pouvait enfin répondre aux questions de l'auditeur de la certification sans chercher pendant une heure."*
-> — Responsable d'une coopérative sésame, Province du Houet
-
-> *"L'application a remplacé 4 cahiers et un classeur entier."*
-> — Agent de terrain, coopérative maraîchage, Ouagadougou
+Aucun témoignage pour l'instant : le produit est en phase pilote et nous cherchons nos premiers utilisateurs. Contactez-nous pour l'essayer et nous dire ce qui manque.
 
 ---
 
