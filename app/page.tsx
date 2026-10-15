@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Leaf, Users, Package, BarChart2, Wifi, Shield } from 'lucide-react'
 import { hoverScale } from '@/lib/animations'
+import ProjectVideo from '@/components/ProjectVideo'
 
 const features = [
   { icon: Users, title: 'Gestion membres', desc: "Suivez vos coopérateurs, leurs parcelles et leur production" },
@@ -62,6 +63,19 @@ export default function LandingPage() {
             </Link>
           </div>
         </motion.div>
+
+        <section className="mt-16 max-w-3xl mx-auto">
+          <h2 className="text-2xl font-bold text-white mb-2">AgroTrack BF en vidéo</h2>
+          <p className="text-white/50 text-sm mb-6">
+            Produit en développement : nous cherchons des coopératives pilotes.
+          </p>
+          <ProjectVideo slug="agrotrack" lang="fr" title="Vidéo de présentation d'AgroTrack BF" />
+          <a href="mailto:docompaore2@gmail.com?subject=AgroTrack%20BF%20%E2%80%94%20Coop%C3%A9rative%20pilote"
+            className="inline-block mt-6 px-8 py-3 rounded-xl font-semibold text-lg transition-all hover:scale-105"
+            style={{ background: '#D4AF37', color: '#0A1628' }}>
+            Devenir coopérative pilote
+          </a>
+        </section>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-20">
           {features.map((f, i) => (
