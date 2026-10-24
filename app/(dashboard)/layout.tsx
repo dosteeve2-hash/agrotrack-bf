@@ -3,6 +3,7 @@ import { supabaseConfigure } from '@/lib/supabase/config'
 import { redirect } from 'next/navigation'
 import DashboardNav from '@/components/DashboardNav'
 import ExampleDataBanner from '@/components/ExampleDataBanner'
+import ScrollToTop from '@/components/ScrollToTop'
 
 const DEMO_EMAIL = 'demo@agrotrack-bf.com'
 
@@ -33,6 +34,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <ExampleDataBanner isDemoAccount={user.email === DEMO_EMAIL} />
         {children}
       </main>
+      <ScrollToTop />
     </div>
   )
 }
