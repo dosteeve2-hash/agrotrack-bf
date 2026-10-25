@@ -1,0 +1,38 @@
+﻿[
+    {
+        "slug":  "agri-donnees",
+        "fichier":  "/images/photos/agri-donnees.webp",
+        "width":  1600,
+        "height":  1130,
+        "titre":  "2017.10-458-284ap agricultural scientist,sorghum,weighing,writing INERA Res.Stn Saria(...),BF mon23oct2017-1100h.jpg",
+        "auteur":  "Rik Schuiling / TropCrop-TCS",
+        "licence":  "CC BY-SA 4.0",
+        "licenceUrl":  "https://creativecommons.org/licenses/by-sa/4.0/deed.fr",
+        "source":  "https://commons.wikimedia.org/wiki/File:2017.10-458-284ap_agricultural_scientist,sorghum,weighing,writing_INERA_Res.Stn_Saria(...),BF_mon23oct2017-1100h.jpg",
+        "modifications":  "Redimensionnée et convertie en WebP. Le fichier modifié reste sous la même licence."
+    },
+    {
+        "slug":  "agri-arrosage",
+        "fichier":  "/images/photos/agri-arrosage.webp",
+        "width":  1600,
+        "height":  1200,
+        "titre":  "Watering the plantation.jpg",
+        "auteur":  "PGskot",
+        "licence":  "CC BY-SA 4.0",
+        "licenceUrl":  "https://creativecommons.org/licenses/by-sa/4.0/deed.fr",
+        "source":  "https://commons.wikimedia.org/wiki/File:Watering_the_plantation.jpg",
+        "modifications":  "Redimensionnée et convertie en WebP. Le fichier modifié reste sous la même licence."
+    },
+    {
+        "slug":  "industrie-cereales",
+        "fichier":  "/images/photos/industrie-cereales.webp",
+        "width":  1600,
+        "height":  808,
+        "titre":  "Cleaning the cereal.jpg",
+        "auteur":  "PGskot",
+        "licence":  "CC BY-SA 4.0",
+        "licenceUrl":  "https://creativecommons.org/licenses/by-sa/4.0/deed.fr",
+        "source":  "https://commons.wikimedia.org/wiki/File:Cleaning_the_cereal.jpg",
+        "modifications":  "Redimensionnée et convertie en WebP. Le fichier modifié reste sous la même licence."
+    }
+]
