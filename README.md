@@ -4,13 +4,13 @@
 
 > Gestion de coopératives agricoles, offline-first. Conçu pour le terrain burkinabè.
 
-[![Status](https://img.shields.io/badge/Status-En%20conception-blue)](.)
+[![Status](https://img.shields.io/badge/Status-En%20d%C3%A9veloppement-blue)](https://agrotrack-bf.vercel.app)
 [![Part of FORGE Afrika](https://img.shields.io/badge/FORGE%20Afrika-Ecosystem-D4AF37)](https://github.com/dosteeve2-hash/forge-afrika)
 [![Demo](https://img.shields.io/badge/Demo-Voir%20live-D4AF37?style=for-the-badge)](https://agrotrack-bf.vercel.app)
 
 ## 🌍 Demo Live
 
-**Application live :** https://agrotrack-bf.vercel.app
+**Site de présentation en ligne :** https://agrotrack-bf.vercel.app. Le tableau de bord est fermé en production.
 
 > Gestion de coopératives agricoles offline-first — membres, collectes, paiements, sync automatique
 
