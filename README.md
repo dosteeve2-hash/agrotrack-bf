@@ -2,7 +2,7 @@
 
 <h1 align="center">🌾 AgroTrack BF</h1>
 
-> Gestion de coopératives agricoles, offline-first. Conçu pour le terrain burkinabè.
+> Projet en développement : gestion de coopératives agricoles, conçue pour le terrain burkinabè. Le mode hors ligne est un objectif, pas encore une fonctionnalité livrée.
 
 [![Status](https://img.shields.io/badge/Status-En%20d%C3%A9veloppement-blue)](https://agrotrack-bf.vercel.app)
 [![Part of FORGE Afrika](https://img.shields.io/badge/FORGE%20Afrika-Ecosystem-D4AF37)](https://github.com/dosteeve2-hash/forge-afrika)
@@ -12,7 +12,7 @@
 
 **Site de présentation en ligne :** https://agrotrack-bf.vercel.app. Le tableau de bord est fermé en production.
 
-> Gestion de coopératives agricoles offline-first — membres, collectes, paiements, sync automatique
+> Dans le dépôt, le tableau de bord (membres, parcelles, collectes, paiements, etc.) existe sous forme d'écrans, mais aucune base Supabase n'est branchée ni aucune migration appliquée (voir `supabase/README.md`) : aucune coopérative réelle ne l'utilise.
 
 ## 🎯 Problème résolu
 
@@ -20,7 +20,7 @@ Les coopératives agricoles (coton, sésame, karité) gèrent encore leurs membr
 
 ## 💡 Solution
 
-AgroTrack BF est une PWA offline-first qui permet aux coopératives de :
+AgroTrack BF vise à devenir une application offline-first (PWA) qui permettrait aux coopératives de :
 - Enregistrer les membres et leurs parcelles
 - Suivre les collectes et peser les récoltes
 - Gérer les paiements aux producteurs
@@ -28,9 +28,11 @@ AgroTrack BF est une PWA offline-first qui permet aux coopératives de :
 
 ## 🎯 Cible
 
-Coopératives coton et sésame, Burkina Faso — 2 000+ coopératives non digitalisées.
+Coopératives coton et sésame, Burkina Faso.
 
 ## 🖥️ Fonctionnalités prévues
+
+État : des écrans existent pour la plupart de ces modules (membres, parcelles, collectes, paiements, stocks, rapports), sans données réelles ; un export PDF de rapport existe, la synchronisation hors ligne n'est pas livrée.
 
 | Module | Description |
 |--------|-------------|
@@ -43,18 +45,18 @@ Coopératives coton et sésame, Burkina Faso — 2 000+ coopératives non digita
 
 ## 🛠️ Stack
 
-- Next.js 15 (App Router) + TypeScript + Tailwind CSS
-- Supabase (PostgreSQL + Realtime + offline sync)
-- PWA (Workbox) — offline-first
-- shadcn/ui + Framer Motion
+- Next.js 16 (App Router) + TypeScript + Tailwind CSS
+- Supabase (Auth + PostgreSQL, schéma versionné dans `supabase/migrations/`, non appliqué)
+- Framer Motion, composants maison
 - Vercel
+- Prévu, pas encore en place : mode hors ligne (service worker, file de synchronisation), Realtime ; le dépôt n'a qu'un manifeste web
 
 ## 🌍 Écosystème FORGE Afrika
 
 AgroTrack BF fait partie de [FORGE Afrika](https://github.com/dosteeve2-hash/forge-afrika) — l'infrastructure logicielle de l'industrialisation ouest-africaine.
 
 **Produits liés :**
-- [TAAMA](https://github.com/dosteeve2-hash/taama) — ERP PMEs transformation
+- [MillTrack](https://github.com/dosteeve2-hash/milltrack) — usines de transformation (TAAMA en est devenu le module Qualité)
 - [ValueChain Connect](https://github.com/dosteeve2-hash/valuechain-connect) — Marketplace B2B
 
 ## 🚀 Roadmap
