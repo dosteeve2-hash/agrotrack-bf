@@ -1,4 +1,6 @@
-# 🌾 AgroTrack BF
+<p align="center"><img src="docs/brand/mark.svg" alt="AgroTrack BF" width="72" height="72"></p>
+
+<h1 align="center">🌾 AgroTrack BF</h1>
 
 > Gestion de coopératives agricoles, offline-first. Conçu pour le terrain burkinabè.
 
